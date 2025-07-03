@@ -59,4 +59,15 @@ class UserTest {
         user.setBirthday(LocalDate.of(1990, 1, 1));
         assertDoesNotThrow(user::validate);
     }
+
+    @Test
+    void shouldSetLoginAsNameWhenNameIsNull() {
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setLogin("testLogin");
+        user.setName(null);
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        user.validate();
+        assertEquals("testLogin", user.getName());
+    }
 }
