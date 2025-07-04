@@ -70,4 +70,27 @@ class UserTest {
         user.validate();
         assertEquals("testLogin", user.getName());
     }
+
+    @Test
+    void shouldFailWhenFieldsAreNull() {
+        User user = new User();
+        assertThrows(ValidationException.class, user::validate, "Email must be specified and contain '@'");
+    }
+
+    @Test
+    void shouldFailWhenLoginIsEmptyString() {
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setLogin("");
+        assertThrows(ValidationException.class, user::validate, "Login must not be empty or contain spaces");
+    }
+
+    @Test
+    void shouldPassWhenBirthdayIsToday() {
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setLogin("testLogin");
+        user.setBirthday(LocalDate.now());
+        assertDoesNotThrow(user::validate);
+    }
 }

@@ -1,30 +1,22 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.validator.AfterDate;
 
 import java.time.LocalDate;
 
 @Data
 public class Film {
     private Integer id;
+    @NotBlank(message = "Film name cannot be empty")
     private String name;
+    @Size(max = 200, message = "Description must not exceed 200 characters")
     private String description;
+    @AfterDate(value = "1895-12-28", message = "Release date must be on or after December 28, 1895")
     private LocalDate releaseDate;
+    @Positive(message = "Duration must be positive")
     private Integer duration;
-
-    public void validate() {
-        if (name == null || name.isBlank()) {
-            throw new ValidationException("Film name cannot be empty");
-        }
-        if (description != null && description.length() > 200) {
-            throw new ValidationException("Description must not exceed 200 characters");
-        }
-        if (releaseDate != null && releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Release date must be on or after December 28, 1895");
-        }
-        if (duration != null && duration <= 0) {
-            throw new ValidationException("Duration must be positive");
-        }
-    }
 }
