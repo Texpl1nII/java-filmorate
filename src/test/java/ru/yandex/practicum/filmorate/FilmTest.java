@@ -78,7 +78,7 @@ class FilmTest {
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Film name cannot be empty")));
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Duration must be positive")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Duration must not be null")));
     }
 
     @Test
