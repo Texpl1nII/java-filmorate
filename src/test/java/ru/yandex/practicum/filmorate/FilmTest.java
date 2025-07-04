@@ -25,6 +25,9 @@ class FilmTest {
     void shouldFailWhenNameIsEmpty() {
         Film film = new Film();
         film.setName("");
+        film.setDescription("Valid description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
         assertEquals("Film name cannot be empty", violations.iterator().next().getMessage());
@@ -35,6 +38,8 @@ class FilmTest {
         Film film = new Film();
         film.setName("Test Film");
         film.setDescription("a".repeat(201));
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
         assertEquals("Description must not exceed 200 characters", violations.iterator().next().getMessage());
@@ -44,7 +49,9 @@ class FilmTest {
     void shouldFailWhenReleaseDateBefore1895() {
         Film film = new Film();
         film.setName("Test Film");
+        film.setDescription("Valid description");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
+        film.setDuration(1);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
         assertEquals("Release date must be on or after December 28, 1895", violations.iterator().next().getMessage());
@@ -54,6 +61,7 @@ class FilmTest {
     void shouldFailWhenDurationNotPositive() {
         Film film = new Film();
         film.setName("Test Film");
+        film.setDescription("Valid description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(0);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
