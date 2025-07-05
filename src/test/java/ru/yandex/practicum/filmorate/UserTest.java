@@ -1,18 +1,35 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {
+    private Validator validator;
+
+    @BeforeEach
+    void setUp() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
     @Test
     void shouldFailWhenEmailIsEmpty() {
         User user = new User();
         user.setLogin("testLogin");
-        assertThrows(ValidationException.class, user::validate, "Email must be specified and contain '@'");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        assertEquals("Email must be specified", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -20,7 +37,10 @@ class UserTest {
         User user = new User();
         user.setEmail("invalid.email");
         user.setLogin("testLogin");
-        assertThrows(ValidationException.class, user::validate, "Email must be specified and contain '@'");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        assertEquals("Email must contain '@'", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -28,7 +48,10 @@ class UserTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("test login");
-        assertThrows(ValidationException.class, user::validate, "Login must not be empty or contain spaces");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        assertEquals("Login must not contain spaces", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -37,7 +60,9 @@ class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("testLogin");
         user.setName("");
-        user.validate();
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty());
         assertEquals("testLogin", user.getName());
     }
 
@@ -47,7 +72,9 @@ class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("testLogin");
         user.setBirthday(LocalDate.now().plusDays(1));
-        assertThrows(ValidationException.class, user::validate, "Birthday cannot be in the future");
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        assertEquals("Birthday cannot be in the future", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -57,7 +84,8 @@ class UserTest {
         user.setLogin("testLogin");
         user.setName("Test User");
         user.setBirthday(LocalDate.of(1990, 1, 1));
-        assertDoesNotThrow(user::validate);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty());
     }
 
     @Test
@@ -67,14 +95,18 @@ class UserTest {
         user.setLogin("testLogin");
         user.setName(null);
         user.setBirthday(LocalDate.of(1990, 1, 1));
-        user.validate();
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty());
         assertEquals("testLogin", user.getName());
     }
 
     @Test
     void shouldFailWhenFieldsAreNull() {
         User user = new User();
-        assertThrows(ValidationException.class, user::validate, "Email must be specified and contain '@'");
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Email must be specified")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Login must not be empty")));
     }
 
     @Test
@@ -82,7 +114,10 @@ class UserTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("");
-        assertThrows(ValidationException.class, user::validate, "Login must not be empty or contain spaces");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        assertEquals("Login must not be empty", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -91,6 +126,7 @@ class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("testLogin");
         user.setBirthday(LocalDate.now());
-        assertDoesNotThrow(user::validate);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty());
     }
 }
