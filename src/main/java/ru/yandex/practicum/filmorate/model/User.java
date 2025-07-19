@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.validator.NameOrLogin;
 import ru.yandex.practicum.filmorate.validator.NotFutureDate;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NameOrLogin
@@ -22,4 +24,5 @@ public class User {
     private String name;
     @NotFutureDate
     private LocalDate birthday;
+    private Set<Long> friends = new HashSet<>();
 }
