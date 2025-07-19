@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -36,14 +38,28 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
+    public User create(@Valid @RequestBody User user, BindingResult result) {
         log.debug("Creating new user: {}", user.getEmail());
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining("; "));
+            log.error("Validation failed for user creation: {}", errorMessage);
+            throw new ValidationException("Invalid user data: " + errorMessage);
+        }
         return userStorage.add(user);
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User user) {
+    public User update(@Valid @RequestBody User user, BindingResult result) {
         log.debug("Updating user with id: {}", user.getId());
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining("; "));
+            log.error("Validation failed for user update: {}", errorMessage);
+            throw new ValidationException("Invalid user data: " + errorMessage);
+        }
         if (user.getId() == null || user.getId() <= 0) {
             log.error("Invalid user ID: {}", user.getId());
             throw new ValidationException("User ID must be specified and positive");

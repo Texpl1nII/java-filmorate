@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,6 +11,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -36,14 +39,28 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film, BindingResult result) {
         log.debug("Creating new film: {}", film.getName());
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining("; "));
+            log.error("Validation failed for film creation: {}", errorMessage);
+            throw new ValidationException("Invalid film data: " + errorMessage);
+        }
         return filmStorage.add(film);
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film, BindingResult result) {
         log.debug("Updating film with id: {}", film.getId());
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining("; "));
+            log.error("Validation failed for film update: {}", errorMessage);
+            throw new ValidationException("Invalid film data: " + errorMessage);
+        }
         if (film.getId() == null || film.getId() <= 0) {
             log.error("Invalid film ID: {}", film.getId());
             throw new ValidationException("Film ID must be specified and positive");
