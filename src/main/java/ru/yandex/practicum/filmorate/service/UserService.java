@@ -19,41 +19,34 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        User user = userStorage.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        User friend = userStorage.findById(friendId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
+        User user = getUserOrThrow(userId);
+        User friend = getUserOrThrow(friendId);
         user.getFriends().add((long) friendId);
         friend.getFriends().add((long) userId);
         log.info("User {} added friend {}", userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        User user = userStorage.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        User friend = userStorage.findById(friendId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
+        User user = getUserOrThrow(userId);
+        User friend = getUserOrThrow(friendId);
         user.getFriends().remove((long) friendId);
         friend.getFriends().remove((long) userId);
         log.info("User {} removed friend {}", userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
-        User user = userStorage.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
+        User user = getUserOrThrow(userId);
         log.info("Returning friends for user {}: {}", userId, user.getFriends().size());
         return user.getFriends().stream()
                 .map(id -> userStorage.findById(id.intValue())
                         .orElse(null))
-                .filter(u -> u != null)
+                .filter(user1 -> user != null)
                 .collect(Collectors.toList());
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
-        User user = userStorage.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        User other = userStorage.findById(otherId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + otherId + " not found"));
+        User user = getUserOrThrow(userId);
+        User other = getUserOrThrow(otherId);
         Set<Long> commonFriends = user.getFriends().stream()
                 .filter(other.getFriends()::contains)
                 .collect(Collectors.toSet());
@@ -61,7 +54,12 @@ public class UserService {
         return commonFriends.stream()
                 .map(id -> userStorage.findById(id.intValue())
                         .orElse(null))
-                .filter(u -> u != null)
+                .filter(user1 -> user != null)
                 .collect(Collectors.toList());
+    }
+
+    User getUserOrThrow(int id) {
+        return userStorage.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
     }
 }
