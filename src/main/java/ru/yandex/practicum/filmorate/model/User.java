@@ -1,14 +1,17 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.Constraint;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.Payload;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validator.NameOrLogin;
 import ru.yandex.practicum.filmorate.validator.NotFutureDate;
@@ -21,7 +24,8 @@ import java.util.Set;
 @NameOrLogin
 public class User {
     private Integer id;
-    @Email(message = "Email must contain '@'")
+    @NotBlank(message = "Email must be specified")
+    @Email(message = "Email must be a valid email address")
     private String email;
     @ValidLogin
     private String login;
@@ -35,7 +39,9 @@ public class User {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface ValidLogin {
         String message() default "Login must not be empty or contain spaces";
+
         Class<?>[] groups() default {};
+
         Class<? extends Payload>[] payload() default {};
     }
 
