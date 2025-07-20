@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,26 @@ public class UserService {
 
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
+    }
+
+    public User add(User user) {
+        log.debug("Adding user: {}", user.getEmail());
+        return userStorage.add(user);
+    }
+
+    public User update(User user) {
+        log.debug("Updating user with id: {}", user.getId());
+        return userStorage.update(user);
+    }
+
+    public Optional<User> findById(int id) {
+        log.debug("Finding user with id: {}", id);
+        return userStorage.findById(id);
+    }
+
+    public List<User> findAll() {
+        log.debug("Returning all users, count: {}", userStorage.findAll().size());
+        return userStorage.findAll();
     }
 
     public void addFriend(int userId, int friendId) {
@@ -58,8 +79,12 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    User getUserOrThrow(int id) {
-        return userStorage.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
+    public User getUserOrThrow(int id) {
+        Optional<User> user = userStorage.findById(id);
+        if (user.isEmpty()) {
+            log.error("User with id {} not found", id);
+            throw new IllegalArgumentException("User with id " + id + " not found");
+        }
+        return user.get();
     }
 }

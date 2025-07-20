@@ -14,28 +14,28 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException e) {
-        return new ErrorResponse(e.getMessage());
+    public ErrorResponse handleValidationException(final ValidationException exception) {
+        return new ErrorResponse("Validation failed: " + exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
-        String errorMessage = e.getBindingResult().getFieldErrors().stream()
+    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
+        String errorMessage = exception.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
-        return new ErrorResponse("Invalid data: " + errorMessage);
+        return new ErrorResponse("Validation failed: " + errorMessage);
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
-        return new ErrorResponse(e.getMessage());
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException exception) {
+        return new ErrorResponse("Not found: " + exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
+    public ErrorResponse handleThrowable(final Throwable exception) {
         return new ErrorResponse("Произошла непредвиденная ошибка.");
     }
 }

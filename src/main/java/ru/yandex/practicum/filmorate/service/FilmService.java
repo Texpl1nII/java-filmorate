@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
@@ -59,6 +60,10 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int count) {
+        if (count <= 0) {
+            log.error("Invalid count for popular films: {}", count);
+            throw new ValidationException("Count must be positive");
+        }
         log.info("Returning top {} popular films", count);
         return filmStorage.findAll().stream()
                 .sorted(Comparator.comparingInt(film -> -film.getLikes().size()))
@@ -67,7 +72,11 @@ public class FilmService {
     }
 
     private Film getFilmOrThrow(int id) {
-        return filmStorage.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Film with id " + id + " not found"));
+        Optional<Film> film = filmStorage.findById(id);
+        if (film.isEmpty()) {
+            log.error("Film with id {} not found", id);
+            throw new IllegalArgumentException("Film with id " + id + " not found");
+        }
+        return film.get();
     }
 }

@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validator.NameOrLogin;
 import ru.yandex.practicum.filmorate.validator.NotFutureDate;
@@ -19,7 +18,6 @@ public class User {
     @Email(message = "Email must contain '@'")
     private String email;
     @NotBlank(message = "Login must not be empty")
-    @Pattern(regexp = "\\S+", message = "Login must not contain spaces")
     private String login;
     private String name;
     @NotFutureDate
