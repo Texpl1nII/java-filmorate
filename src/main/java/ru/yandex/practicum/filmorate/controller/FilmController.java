@@ -41,10 +41,6 @@ public class FilmController {
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("Updating film with id: {}", film.getId());
-        if (film.getId() == null || film.getId() <= 0) {
-            log.error("Invalid film ID: {}", film.getId());
-            throw new ValidationException("Film ID must be specified and positive");
-        }
         return filmService.update(film);
     }
 

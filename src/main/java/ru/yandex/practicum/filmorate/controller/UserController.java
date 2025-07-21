@@ -2,69 +2,45 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final UserStorage userStorage;
 
-    public UserController(UserService userService, UserStorage userStorage) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userStorage = userStorage;
     }
 
     @GetMapping
     public List<User> findAll() {
-        log.info("Returning all users, count: {}", userStorage.findAll().size());
-        return userStorage.findAll();
+        log.info("Returning all users, count: {}", userService.findAll().size());
+        return userService.findAll();
     }
 
     @GetMapping("/{id}")
     public User findById(@PathVariable int id) {
         log.debug("Finding user with id: {}", id);
-        return userStorage.findById(id)
+        return userService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user, BindingResult result) {
+    public User create(@Valid @RequestBody User user) {
         log.debug("Creating new user: {}", user.getEmail());
-        if (result.hasErrors()) {
-            String errorMessage = result.getFieldErrors().stream()
-                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .collect(Collectors.joining("; "));
-            log.error("Validation failed for user creation: {}", errorMessage);
-            throw new ValidationException("Invalid user data: " + errorMessage);
-        }
-        return userStorage.add(user);
+        return userService.add(user);
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User user, BindingResult result) {
+    public User update(@Valid @RequestBody User user) {
         log.debug("Updating user with id: {}", user.getId());
-        if (result.hasErrors()) {
-            String errorMessage = result.getFieldErrors().stream()
-                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .collect(Collectors.joining("; "));
-            log.error("Validation failed for user update: {}", errorMessage);
-            throw new ValidationException("Invalid user data: " + errorMessage);
-        }
-        if (user.getId() == null || user.getId() <= 0) {
-            log.error("Invalid user ID: {}", user.getId());
-            throw new ValidationException("User ID must be specified and positive");
-        }
-        return userStorage.update(user);
+        return userService.update(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

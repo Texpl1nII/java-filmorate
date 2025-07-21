@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -26,6 +27,10 @@ public class UserService {
 
     public User update(User user) {
         log.debug("Updating user with id: {}", user.getId());
+        if (user.getId() == null || user.getId() <= 0) {
+            log.error("Invalid user ID: {}", user.getId());
+            throw new ValidationException("User ID must be specified and positive");
+        }
         return userStorage.update(user);
     }
 
@@ -61,7 +66,7 @@ public class UserService {
         return user.getFriends().stream()
                 .map(id -> userStorage.findById(id.intValue())
                         .orElse(null))
-                .filter(user1 -> user != null)
+                .filter(user1 -> user1 != null)
                 .collect(Collectors.toList());
     }
 
@@ -75,7 +80,7 @@ public class UserService {
         return commonFriends.stream()
                 .map(id -> userStorage.findById(id.intValue())
                         .orElse(null))
-                .filter(user1 -> user != null)
+                .filter(user1 -> user1 != null)
                 .collect(Collectors.toList());
     }
 
