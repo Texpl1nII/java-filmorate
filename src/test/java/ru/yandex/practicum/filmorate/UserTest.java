@@ -28,8 +28,9 @@ class UserTest {
         user.setLogin("testLogin");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-        assertEquals("Email must be specified", violations.iterator().next().getMessage());
+        assertFalse(violations.isEmpty(), "Validation should fail for empty email");
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email") &&
+                v.getMessage().equals("Email must be specified")), "Expected 'Email must be specified' error");
     }
 
     @Test
@@ -39,8 +40,9 @@ class UserTest {
         user.setLogin("testLogin");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-        assertEquals("Email must contain '@'", violations.iterator().next().getMessage());
+        assertFalse(violations.isEmpty(), "Validation should fail for invalid email format");
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email") &&
+                v.getMessage().equals("Email must be a valid email address")), "Expected 'Email must be a valid email address' error");
     }
 
     @Test
@@ -50,8 +52,9 @@ class UserTest {
         user.setLogin("test login");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-        assertEquals("Login must not contain spaces", violations.iterator().next().getMessage());
+        assertFalse(violations.isEmpty(), "Validation should fail for login with spaces");
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("login") &&
+                v.getMessage().equals("Login must not contain spaces")), "Expected 'Login must not contain spaces' error");
     }
 
     @Test
@@ -62,8 +65,8 @@ class UserTest {
         user.setName("");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
-        assertEquals("testLogin", user.getName());
+        assertTrue(violations.isEmpty(), "Validation should pass for valid user");
+        assertEquals("testLogin", user.getName(), "Name should be set to login when empty");
     }
 
     @Test
@@ -73,8 +76,9 @@ class UserTest {
         user.setLogin("testLogin");
         user.setBirthday(LocalDate.now().plusDays(1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-        assertEquals("Birthday cannot be in the future", violations.iterator().next().getMessage());
+        assertFalse(violations.isEmpty(), "Validation should fail for future birthday");
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("birthday") &&
+                v.getMessage().equals("Birthday cannot be in the future")), "Expected 'Birthday cannot be in the future' error");
     }
 
     @Test
@@ -85,7 +89,7 @@ class UserTest {
         user.setName("Test User");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertTrue(violations.isEmpty(), "Validation should pass for valid user");
     }
 
     @Test
@@ -96,17 +100,19 @@ class UserTest {
         user.setName(null);
         user.setBirthday(LocalDate.of(1990, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
-        assertEquals("testLogin", user.getName());
+        assertTrue(violations.isEmpty(), "Validation should pass for valid user");
+        assertEquals("testLogin", user.getName(), "Name should be set to login when null");
     }
 
     @Test
     void shouldFailWhenFieldsAreNull() {
         User user = new User();
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Email must be specified")));
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Login must not be empty")));
+        assertFalse(violations.isEmpty(), "Validation should fail for null fields");
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email") &&
+                v.getMessage().equals("Email must be specified")), "Expected 'Email must be specified' error");
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("login") &&
+                v.getMessage().equals("Login must not be empty")), "Expected 'Login must not be empty' error");
     }
 
     @Test
@@ -116,8 +122,9 @@ class UserTest {
         user.setLogin("");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-        assertEquals("Login must not be empty", violations.iterator().next().getMessage());
+        assertFalse(violations.isEmpty(), "Validation should fail for empty login");
+        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("login") &&
+                v.getMessage().equals("Login must not be empty")), "Expected 'Login must not be empty' error");
     }
 
     @Test
@@ -127,6 +134,6 @@ class UserTest {
         user.setLogin("testLogin");
         user.setBirthday(LocalDate.now());
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
+        assertTrue(violations.isEmpty(), "Validation should pass for valid user with today’s birthday");
     }
 }
