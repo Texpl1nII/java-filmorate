@@ -33,6 +33,7 @@ public class User {
     @NotFutureDate
     private LocalDate birthday;
     private Set<Long> friends = new HashSet<>();
+    private String friendshipStatus;
 
     @Constraint(validatedBy = LoginValidator.class)
     @Target({ElementType.FIELD})
