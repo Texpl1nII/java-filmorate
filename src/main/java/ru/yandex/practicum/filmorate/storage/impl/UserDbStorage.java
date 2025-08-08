@@ -12,9 +12,10 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository("userDbStorage")
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class UserDbStorage implements UserStorage {
             ps.setDate(4, Date.valueOf(user.getBirthday()));
             return ps;
         }, keyHolder);
-        user.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        user.setId(keyHolder.getKey().longValue());
         return user;
     }
 
@@ -60,38 +61,43 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        String sql = "INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, 'unconfirmed')";
+        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
     public void removeFriend(int userId, int friendId) {
-        String sql = "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?";
+        String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
     public List<User> getFriends(int userId) {
-        String sql = "SELECT u.* FROM users u JOIN friendships f ON u.user_id = f.friend_id WHERE f.user_id = ?";
+        String sql = "SELECT u.* FROM users u JOIN friends f ON u.user_id = f.friend_id WHERE f.user_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToUser, userId);
     }
 
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
         String sql = "SELECT u.* FROM users u " +
-                "JOIN friendships f1 ON u.user_id = f1.friend_id AND f1.user_id = ? " +
-                "JOIN friendships f2 ON u.user_id = f2.friend_id AND f2.user_id = ? " +
-                "WHERE f1.status = 'confirmed' AND f2.status = 'confirmed'";
+                "JOIN friends f1 ON u.user_id = f1.friend_id AND f1.user_id = ? " +
+                "JOIN friends f2 ON u.user_id = f2.friend_id AND f2.user_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherId);
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
-        user.setId(rs.getInt("user_id"));
+        user.setId(rs.getLong("user_id"));
         user.setEmail(rs.getString("email"));
         user.setLogin(rs.getString("login"));
         user.setName(rs.getString("name"));
         user.setBirthday(rs.getDate("birthday").toLocalDate());
+        user.setFriends(getFriendIds(rs.getLong("user_id")));
         return user;
+    }
+
+    private Set<Long> getFriendIds(long userId) {
+        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
+        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId));
     }
 }

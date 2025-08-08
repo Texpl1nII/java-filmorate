@@ -92,19 +92,19 @@ class UserDbStorageTest {
         user1.setLogin("testLogin1");
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
-        userStorage.add(user1);
+        User savedUser1 = userStorage.add(user1);
 
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
-        userStorage.add(user2);
+        User savedUser2 = userStorage.add(user2);
 
-        userStorage.addFriend(user1.getId(), user2.getId());
-        List<User> friends = userStorage.getFriends(user1.getId());
+        userStorage.addFriend(savedUser1.getId(), savedUser2.getId());
+        List<User> friends = userStorage.getFriends(savedUser1.getId());
         assertThat(friends).hasSize(1);
-        assertThat(friends.get(0).getId()).isEqualTo(user2.getId());
+        assertThat(friends.get(0).getId()).isEqualTo(savedUser2.getId());
     }
 
     @Test
@@ -114,18 +114,18 @@ class UserDbStorageTest {
         user1.setLogin("testLogin1");
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
-        userStorage.add(user1);
+        User savedUser1 = userStorage.add(user1);
 
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
-        userStorage.add(user2);
+        User savedUser2 = userStorage.add(user2);
 
-        userStorage.addFriend(user1.getId(), user2.getId());
-        userStorage.removeFriend(user1.getId(), user2.getId());
-        List<User> friends = userStorage.getFriends(user1.getId());
+        userStorage.addFriend(savedUser1.getId(), savedUser2.getId());
+        userStorage.removeFriend(savedUser1.getId(), savedUser2.getId());
+        List<User> friends = userStorage.getFriends(savedUser1.getId());
         assertThat(friends).isEmpty();
     }
 
@@ -136,17 +136,17 @@ class UserDbStorageTest {
         user1.setLogin("testLogin1");
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
-        userStorage.add(user1);
+        User savedUser1 = userStorage.add(user1);
 
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
-        userStorage.add(user2);
+        User savedUser2 = userStorage.add(user2);
 
-        userStorage.addFriend(user1.getId(), user2.getId());
-        List<User> friends = userStorage.getFriends(user1.getId());
+        userStorage.addFriend(savedUser1.getId(), savedUser2.getId());
+        List<User> friends = userStorage.getFriends(savedUser1.getId());
         assertThat(friends).hasSize(1);
     }
 
@@ -157,26 +157,26 @@ class UserDbStorageTest {
         user1.setLogin("testLogin1");
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
-        userStorage.add(user1);
+        User savedUser1 = userStorage.add(user1);
 
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
-        userStorage.add(user2);
+        User savedUser2 = userStorage.add(user2);
 
         User user3 = new User();
         user3.setEmail("test3@example.com");
         user3.setLogin("testLogin3");
         user3.setName("Test User3");
         user3.setBirthday(LocalDate.of(1992, 1, 1));
-        userStorage.add(user3);
+        User savedUser3 = userStorage.add(user3);
 
-        userStorage.addFriend(user1.getId(), user3.getId());
-        userStorage.addFriend(user2.getId(), user3.getId());
-        List<User> commonFriends = userStorage.getCommonFriends(user1.getId(), user2.getId());
+        userStorage.addFriend(savedUser1.getId(), savedUser3.getId());
+        userStorage.addFriend(savedUser2.getId(), savedUser3.getId());
+        List<User> commonFriends = userStorage.getCommonFriends(savedUser1.getId(), savedUser2.getId());
         assertThat(commonFriends).hasSize(1);
-        assertThat(commonFriends.get(0).getId()).isEqualTo(user3.getId());
+        assertThat(commonFriends.get(0).getId()).isEqualTo(savedUser3.getId());
     }
 }

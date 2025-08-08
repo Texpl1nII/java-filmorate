@@ -24,7 +24,7 @@ class MpaRatingDbStorageTest {
     @Test
     void testFindAllMpaRatings() {
         List<MpaRating> ratings = mpaRatingStorage.findAll();
-        assertThat(ratings).hasSize(5); // As per data.sql
+        assertThat(ratings).hasSize(5);
         assertThat(ratings).anyMatch(r -> r.getName().equals("G"));
     }
 

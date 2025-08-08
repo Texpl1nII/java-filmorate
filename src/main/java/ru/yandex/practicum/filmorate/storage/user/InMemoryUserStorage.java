@@ -6,19 +6,22 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private final ConcurrentHashMap<Integer, User> users = new ConcurrentHashMap<>();
-    private final AtomicInteger idGenerator = new AtomicInteger(0);
+    private final ConcurrentHashMap<Long, User> users = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Set<Long>> friendships = new ConcurrentHashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(0);
 
     @Override
     public User add(User user) {
         user.setId(idGenerator.incrementAndGet());
         users.put(user.getId(), user);
+        friendships.putIfAbsent(user.getId(), ConcurrentHashMap.newKeySet());
         return user;
     }
 
@@ -28,12 +31,13 @@ public class InMemoryUserStorage implements UserStorage {
             throw new IllegalArgumentException("User with id " + user.getId() + " not found");
         }
         users.put(user.getId(), user);
+        friendships.putIfAbsent(user.getId(), ConcurrentHashMap.newKeySet());
         return user;
     }
 
     @Override
     public Optional<User> findById(int id) {
-        return Optional.ofNullable(users.get(id));
+        return Optional.ofNullable(users.get((long) id));
     }
 
     @Override
@@ -47,7 +51,7 @@ public class InMemoryUserStorage implements UserStorage {
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         User friend = findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
-        user.getFriends().add((long) friendId);
+        friendships.computeIfAbsent((long) userId, k -> ConcurrentHashMap.newKeySet()).add((long) friendId);
     }
 
     @Override
@@ -56,16 +60,19 @@ public class InMemoryUserStorage implements UserStorage {
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         User friend = findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
-        user.getFriends().remove((long) friendId);
+        Set<Long> friends = friendships.get((long) userId);
+        if (friends != null) {
+            friends.remove((long) friendId);
+        }
     }
 
     @Override
     public List<User> getFriends(int userId) {
         User user = findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        return user.getFriends().stream()
-                .map(Long::intValue)
-                .map(this::findById)
+        Set<Long> friendIds = friendships.getOrDefault((long) userId, Set.of());
+        return friendIds.stream()
+                .map((Long id) -> findById(Math.toIntExact(id)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
@@ -77,12 +84,11 @@ public class InMemoryUserStorage implements UserStorage {
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         User other = findById(otherId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + otherId + " not found"));
-        List<Long> commonFriendIds = user.getFriends().stream()
-                .filter(other.getFriends()::contains)
-                .collect(Collectors.toList());
-        return commonFriendIds.stream()
-                .map(Long::intValue)
-                .map(this::findById)
+        Set<Long> userFriends = friendships.getOrDefault((long) userId, Set.of());
+        Set<Long> otherFriends = friendships.getOrDefault((long) otherId, Set.of());
+        return userFriends.stream()
+                .filter(otherFriends::contains)
+                .map((Long id) -> findById(Math.toIntExact(id)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());

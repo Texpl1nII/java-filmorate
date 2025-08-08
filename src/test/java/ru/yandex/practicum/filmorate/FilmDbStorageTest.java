@@ -116,7 +116,7 @@ class FilmDbStorageTest {
 
         filmStorage.addLike(savedFilm.getId(), savedUser.getId());
         Optional<Film> filmOptional = filmStorage.findById(savedFilm.getId());
-        assertThat(filmOptional.get().getLikes()).contains(Long.valueOf(savedUser.getId()));
+        assertThat(filmOptional.get().getLikes()).contains(savedUser.getId());
     }
 
     @Test
@@ -139,7 +139,7 @@ class FilmDbStorageTest {
         filmStorage.addLike(savedFilm.getId(), savedUser.getId());
         filmStorage.removeLike(savedFilm.getId(), savedUser.getId());
         Optional<Film> filmOptional = filmStorage.findById(savedFilm.getId());
-        assertThat(filmOptional.get().getLikes()).doesNotContain(Long.valueOf(savedUser.getId()));
+        assertThat(filmOptional.get().getLikes()).doesNotContain(savedUser.getId());
     }
 
     @Test

@@ -12,6 +12,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -35,8 +36,11 @@ public class FilmDbStorage implements FilmStorage {
             ps.setObject(5, film.getMpaRatingId());
             return ps;
         }, keyHolder);
-        film.setId(keyHolder.getKey().intValue());
+        film.setId(keyHolder.getKey().longValue());
         saveGenres(film);
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         return film;
     }
 
@@ -47,29 +51,30 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(), film.getMpaRatingId(), film.getId());
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         saveGenres(film);
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         return film;
     }
 
     @Override
     public Optional<Film> findById(int id) {
-        String sql = "SELECT f.*, m.name AS mpa_name, GROUP_CONCAT(g.genre_id) AS genre_ids " +
+        String sql = "SELECT f.*, GROUP_CONCAT(fg.genre_id) AS genre_ids, GROUP_CONCAT(l.user_id) AS like_ids " +
                 "FROM films f " +
-                "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_rating_id " +
                 "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
-                "WHERE f.film_id = ? GROUP BY f.film_id, m.name";
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "WHERE f.film_id = ? GROUP BY f.film_id";
         List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, id);
         return films.isEmpty() ? Optional.empty() : Optional.of(films.get(0));
     }
 
     @Override
     public List<Film> findAll() {
-        String sql = "SELECT f.*, m.name AS mpa_name, GROUP_CONCAT(g.genre_id) AS genre_ids " +
+        String sql = "SELECT f.*, GROUP_CONCAT(fg.genre_id) AS genre_ids, GROUP_CONCAT(l.user_id) AS like_ids " +
                 "FROM films f " +
-                "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_rating_id " +
                 "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
-                "GROUP BY f.film_id, m.name";
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "GROUP BY f.film_id";
         return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
 
@@ -87,13 +92,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, m.name AS mpa_name, GROUP_CONCAT(g.genre_id) AS genre_ids, COUNT(l.user_id) AS like_count " +
+        String sql = "SELECT f.*, GROUP_CONCAT(fg.genre_id) AS genre_ids, GROUP_CONCAT(l.user_id) AS like_ids, COUNT(l.user_id) AS like_count " +
                 "FROM films f " +
-                "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_rating_id " +
                 "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
                 "LEFT JOIN likes l ON f.film_id = l.film_id " +
-                "GROUP BY f.film_id, m.name ORDER BY like_count DESC LIMIT ?";
+                "GROUP BY f.film_id ORDER BY like_count DESC LIMIT ?";
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);
     }
 
@@ -107,21 +110,36 @@ public class FilmDbStorage implements FilmStorage {
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
-        film.setId(rs.getInt("film_id"));
+        film.setId(rs.getLong("film_id"));
         film.setName(rs.getString("name"));
         film.setDescription(rs.getString("description"));
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
         film.setMpaRatingId(rs.getInt("mpa_rating_id"));
-        String genreIds = rs.getString("genre_ids");
-        if (genreIds != null) {
-            String[] ids = genreIds.split(",");
-            Set<Integer> genreIdSet = new HashSet<>();
-            for (String id : ids) {
-                genreIdSet.add(Integer.parseInt(id.trim()));
-            }
-            film.setGenreIds(genreIdSet);
+        if (rs.getInt("mpa_rating_id") == 0) {
+            film.setMpaRatingId(null);
         }
+
+        String genreIds = rs.getString("genre_ids");
+        Set<Integer> genreIdSet = new HashSet<>();
+        if (genreIds != null && !genreIds.isEmpty()) {
+            Arrays.stream(genreIds.split(","))
+                    .map(String::trim)
+                    .map(Integer::parseInt)
+                    .forEach(genreIdSet::add);
+        }
+        film.setGenreIds(genreIdSet);
+
+        String likeIds = rs.getString("like_ids");
+        Set<Long> likeIdSet = new HashSet<>();
+        if (likeIds != null && !likeIds.isEmpty()) {
+            Arrays.stream(likeIds.split(","))
+                    .map(String::trim)
+                    .map(Long::parseLong)
+                    .forEach(likeIdSet::add);
+        }
+        film.setLikes(likeIdSet);
+
         return film;
     }
 }

@@ -3,23 +3,23 @@ package ru.yandex.practicum.filmorate.storage.film;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private final ConcurrentHashMap<Integer, Film> films = new ConcurrentHashMap<>();
-    private final AtomicInteger idGenerator = new AtomicInteger(0);
+    private final ConcurrentHashMap<Long, Film> films = new ConcurrentHashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(0);
 
     @Override
     public Film add(Film film) {
         film.setId(idGenerator.incrementAndGet());
         films.put(film.getId(), film);
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         return film;
     }
 
@@ -28,13 +28,16 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (!films.containsKey(film.getId())) {
             throw new IllegalArgumentException("Film with id " + film.getId() + " not found");
         }
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         films.put(film.getId(), film);
         return film;
     }
 
     @Override
     public Optional<Film> findById(int id) {
-        return Optional.ofNullable(films.get(id));
+        return Optional.ofNullable(films.get((long) id));
     }
 
     @Override
@@ -59,7 +62,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
         return films.values().stream()
-                .sorted(Comparator.comparingInt(f -> -f.getLikes().size())) // Sort by number of likes, descending
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
                 .limit(count)
                 .collect(Collectors.toList());
     }
