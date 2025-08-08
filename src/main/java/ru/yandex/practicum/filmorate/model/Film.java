@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +15,7 @@ public class Film {
     @Size(max = 200, message = "Description must not exceed 200 characters")
     private String description;
     @NotNull(message = "Release date must not be null")
+    @PastOrPresent(message = "Release date cannot be in the future")
     private LocalDate releaseDate;
     @NotNull(message = "Duration must not be null")
     @Positive(message = "Duration must be positive")
