@@ -34,14 +34,14 @@ public class FilmController {
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Creating new film: {}", film.getName());
-        validateFilm(film);
+        update(film);
         return filmService.add(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("Updating film with id: {}", film.getId());
-        validateFilm(film);
+        update(film);
         return filmService.update(film);
     }
 
@@ -61,14 +61,5 @@ public class FilmController {
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
         log.debug("Requesting top {} popular films", count);
         return filmService.getPopularFilms(count);
-    }
-
-    private void validateFilm(Film film) {
-        if (film.getMpaRatingId() != null && film.getMpaRatingId() <= 0) {
-            throw new IllegalArgumentException("Invalid MPA rating ID");
-        }
-        if (film.getGenreIds() != null && film.getGenreIds().stream().anyMatch(id -> id <= 0)) {
-            throw new IllegalArgumentException("Invalid genre ID");
-        }
     }
 }
