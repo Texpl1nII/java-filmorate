@@ -69,7 +69,7 @@ class FilmDbStorageTest {
         film.setMpaRatingId(1);
         Film savedFilm = filmStorage.add(film);
 
-        Optional<Film> filmOptional = filmStorage.findById(savedFilm.getId());
+        Optional<Film> filmOptional = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
         assertThat(filmOptional)
                 .isPresent()
                 .hasValueSatisfying(f -> assertThat(f).hasFieldOrPropertyWithValue("id", savedFilm.getId()));
@@ -114,8 +114,8 @@ class FilmDbStorageTest {
         film.setMpaRatingId(1);
         Film savedFilm = filmStorage.add(film);
 
-        filmStorage.addLike(savedFilm.getId(), savedUser.getId());
-        Optional<Film> filmOptional = filmStorage.findById(savedFilm.getId());
+        filmStorage.addLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
+        Optional<Film> filmOptional = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
         assertThat(filmOptional.get().getLikes()).contains(savedUser.getId());
     }
 
@@ -136,9 +136,9 @@ class FilmDbStorageTest {
         film.setMpaRatingId(1);
         Film savedFilm = filmStorage.add(film);
 
-        filmStorage.addLike(savedFilm.getId(), savedUser.getId());
-        filmStorage.removeLike(savedFilm.getId(), savedUser.getId());
-        Optional<Film> filmOptional = filmStorage.findById(savedFilm.getId());
+        filmStorage.addLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
+        filmStorage.removeLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
+        Optional<Film> filmOptional = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
         assertThat(filmOptional.get().getLikes()).doesNotContain(savedUser.getId());
     }
 
@@ -167,7 +167,7 @@ class FilmDbStorageTest {
         film2.setMpaRatingId(2);
         Film savedFilm2 = filmStorage.add(film2);
 
-        filmStorage.addLike(savedFilm1.getId(), savedUser.getId());
+        filmStorage.addLike(Math.toIntExact(savedFilm1.getId()), Math.toIntExact(savedUser.getId()));
         List<Film> popularFilms = filmStorage.getPopularFilms(1);
         assertThat(popularFilms).hasSize(1);
         assertThat(popularFilms.get(0).getId()).isEqualTo(savedFilm1.getId());
