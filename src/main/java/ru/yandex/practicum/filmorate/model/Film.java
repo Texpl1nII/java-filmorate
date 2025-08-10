@@ -23,7 +23,7 @@ public class Film {
     @NotBlank(message = "Название фильма не может быть пустым")
     private String name;
 
-    @Size(max=200, message="Описание не должно превышать 200 символов")
+    @Size(max = 200, message = "Описание не должно превышать 200 символов")
     private String description;
 
     @NotNull(message = "Дата выпуска не может быть пустой")
@@ -46,6 +46,7 @@ public class Film {
         String message() default "Дата выпуска не может быть раньше 28 декабря 1895 года.";
 
         Class<?>[] groups() default {};
+
         Class<? extends Payload>[] payload() default {};
     }
 
@@ -53,7 +54,8 @@ public class Film {
         private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
         @Override
-        public void initialize(FilmReleaseDate constraintAnnotation) {}
+        public void initialize(FilmReleaseDate constraintAnnotation) {
+        }
 
         @Override
         public boolean isValid(LocalDate value, ConstraintValidatorContext context) {
