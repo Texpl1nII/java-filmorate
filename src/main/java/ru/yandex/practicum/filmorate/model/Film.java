@@ -4,8 +4,8 @@ import jakarta.validation.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.Data;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -39,14 +39,12 @@ public class Film {
 
     private Set<Long> likes = new HashSet<>();
 
-    @Target(ElementType.FIELD)
+    @Target({ElementType.FIELD})
     @Retention(RetentionPolicy.RUNTIME)
     @Constraint(validatedBy = FilmReleaseDateValidator.class)
     public @interface FilmReleaseDate {
         String message() default "Дата выпуска не может быть раньше 28 декабря 1895 года.";
-
         Class<?>[] groups() default {};
-
         Class<? extends Payload>[] payload() default {};
     }
 
@@ -54,8 +52,7 @@ public class Film {
         private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
         @Override
-        public void initialize(FilmReleaseDate constraintAnnotation) {
-        }
+        public void initialize(FilmReleaseDate constraintAnnotation) {}
 
         @Override
         public boolean isValid(LocalDate value, ConstraintValidatorContext context) {

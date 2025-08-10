@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,32 +11,33 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(final ValidationException exception) {
-        return new ErrorResponse("Validation failed: " + exception.getMessage());
+        return new ErrorResponse("Ошибка валидации: " + exception.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
-        String errorMessage = exception.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+        String errors = exception.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .collect(Collectors.joining("; "));
-        return new ErrorResponse("Validation failed: " + errorMessage);
+        return new ErrorResponse("Ошибка валидации: " + errors);
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException exception) {
-        return new ErrorResponse("Not found: " + exception.getMessage());
+        return new ErrorResponse("Ресурс не найден: " + exception.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable exception) {
-        return new ErrorResponse("Произошла непредвиденная ошибка.");
+    public ErrorResponse handleGeneralException(final Exception exception) {
+        return new ErrorResponse("Произошла внутренняя ошибка сервера");
     }
 }
