@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -7,8 +8,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Long, Film> films = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<Long, Film> films = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(0);
 
     @Override
@@ -24,7 +27,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         if (!films.containsKey(film.getId())) {
-            throw new IllegalArgumentException("Фильм с id " + film.getId() + " не найден");
+            throw new IllegalArgumentException("Film with id " + film.getId() + " not found");
         }
         if (film.getLikes() == null) {
             film.setLikes(new HashSet<>());
@@ -46,14 +49,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void addLike(int filmId, int userId) {
         Film film = findById(filmId)
-                .orElseThrow(() -> new IllegalArgumentException("Фильм с id " + filmId + " не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
         film.getLikes().add((long) userId);
     }
 
     @Override
     public void removeLike(int filmId, int userId) {
         Film film = findById(filmId)
-                .orElseThrow(() -> new IllegalArgumentException("Фильм с id " + filmId + " не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
         film.getLikes().remove((long) userId);
     }
 

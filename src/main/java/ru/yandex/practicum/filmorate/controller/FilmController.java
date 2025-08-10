@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+
     private final FilmService filmService;
 
     public FilmController(FilmService filmService) {
@@ -20,44 +21,44 @@ public class FilmController {
 
     @GetMapping
     public List<Film> findAll() {
-        log.info("Возвращаем все фильмы, всего найдено: {}", filmService.findAll().size());
+        log.info("Returning all films, count: {}", filmService.findAll().size());
         return filmService.findAll();
     }
 
     @GetMapping("/{id}")
     public Film findById(@PathVariable int id) {
-        log.debug("Ищем фильм с id: {}", id);
+        log.debug("Finding film with id: {}", id);
         return filmService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Фильм с id " + id + " не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Film with id " + id + " not found"));
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        log.debug("Создаем новый фильм: {}", film.getName());
+        log.debug("Creating new film: {}", film.getName());
         return filmService.add(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        log.debug("Обновляем фильм с id: {}", film.getId());
+        log.debug("Updating film with id: {}", film.getId());
         return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
-        log.debug("Пользователь {} ставит лайк фильму {}", userId, id);
+        log.debug("User {} liking film {}", userId, id);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLike(@PathVariable int id, @PathVariable int userId) {
-        log.debug("Пользователь {} снимает лайк с фильма {}", userId, id);
+        log.debug("User {} removing like from film {}", userId, id);
         filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-        log.debug("Запрашиваем топ популярных фильмов, лимит: {}", count);
+        log.debug("Requesting top {} popular films", count);
         return filmService.getPopularFilms(count);
     }
 }

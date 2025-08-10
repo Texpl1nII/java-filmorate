@@ -15,8 +15,8 @@ import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-
 public class UserTest {
+
     private Validator validator;
 
     @BeforeEach
@@ -32,7 +32,6 @@ public class UserTest {
         user.setLogin("testuser");
         user.setName("Test User");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertTrue(violations.isEmpty(), "Valid user should have no violations");
     }
@@ -43,7 +42,6 @@ public class UserTest {
         user.setEmail("");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty(), "Empty email should cause violation");
     }
@@ -54,7 +52,6 @@ public class UserTest {
         user.setEmail("invalid.email");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty(), "Email without @ should cause violation");
     }
@@ -65,7 +62,6 @@ public class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty(), "Empty login should cause violation");
     }
@@ -76,7 +72,6 @@ public class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("test user");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty(), "Login with spaces should cause violation");
     }
@@ -85,7 +80,6 @@ public class UserTest {
     void shouldFailWhenFieldsAreNull() {
         User user = new User();
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty(), "Null email and login should cause violations");
     }
@@ -96,7 +90,6 @@ public class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.now().plusDays(1));
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty(), "Future birthday should cause violation");
     }
@@ -107,7 +100,6 @@ public class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.now());
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertTrue(violations.isEmpty(), "Birthday today should be valid");
     }
@@ -118,9 +110,7 @@ public class UserTest {
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         user.ensureValidName();
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertTrue(violations.isEmpty(), "Пользователь с именем установленным как логин должен пройти проверку");
         assertEquals("testuser", user.getName(), "Имя должно быть равно логину");
@@ -131,11 +121,9 @@ public class UserTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testuser");
-        user.setName(""); // Имя задаём пустым
+        user.setName("");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         user.ensureValidName();
-
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertTrue(violations.isEmpty(), "Проверка должна завершиться успехом");
         assertEquals("testuser", user.getName(), "Имя должно стать равным логину");

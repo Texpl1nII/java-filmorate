@@ -9,6 +9,7 @@ import java.util.Set;
 
 @Data
 public class User {
+
     private Long id;
 
     @NotBlank(message = "Электронная почта не может быть пустой")

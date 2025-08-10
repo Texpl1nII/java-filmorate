@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import(MpaRatingDbStorage.class)
 class MpaRatingDbStorageTest {
+
     private final MpaRatingDbStorage mpaRatingStorage;
 
     @Test

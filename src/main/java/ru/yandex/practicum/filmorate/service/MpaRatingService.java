@@ -10,6 +10,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MpaRatingService {
+
     private final MpaRatingStorage mpaRatingStorage;
 
     public List<MpaRating> findAll() {

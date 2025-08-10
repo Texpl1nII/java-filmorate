@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -67,4 +68,3 @@ public class UserController {
         return userService.getCommonFriends(id, otherId);
     }
 }
-

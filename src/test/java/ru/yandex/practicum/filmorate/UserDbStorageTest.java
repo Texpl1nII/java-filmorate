@@ -20,6 +20,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import(UserDbStorage.class)
 class UserDbStorageTest {
+
     private final UserDbStorage userStorage;
 
     @Test
@@ -29,7 +30,6 @@ class UserDbStorageTest {
         user.setLogin("testLogin");
         user.setName("Test User");
         user.setBirthday(LocalDate.of(1990, 1, 1));
-
         User savedUser = userStorage.add(user);
         assertThat(savedUser).isNotNull();
         assertThat(savedUser.getId()).isGreaterThan(0);
@@ -44,7 +44,6 @@ class UserDbStorageTest {
         user.setName("Test User");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         User savedUser = userStorage.add(user);
-
         savedUser.setName("Updated User");
         User updatedUser = userStorage.update(savedUser);
         assertThat(updatedUser.getName()).isEqualTo("Updated User");
@@ -58,7 +57,6 @@ class UserDbStorageTest {
         user.setName("Test User");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         User savedUser = userStorage.add(user);
-
         Optional<User> userOptional = userStorage.findById(Math.toIntExact(savedUser.getId()));
         assertThat(userOptional)
                 .isPresent()
@@ -73,14 +71,12 @@ class UserDbStorageTest {
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
         userStorage.add(user1);
-
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
         userStorage.add(user2);
-
         List<User> users = userStorage.findAll();
         assertThat(users).hasSize(2);
     }
@@ -93,14 +89,12 @@ class UserDbStorageTest {
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
         User savedUser1 = userStorage.add(user1);
-
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
         User savedUser2 = userStorage.add(user2);
-
         userStorage.addFriend(Math.toIntExact(savedUser1.getId()), Math.toIntExact(savedUser2.getId()));
         List<User> friends = userStorage.getFriends(Math.toIntExact(savedUser1.getId()));
         assertThat(friends).hasSize(1);
@@ -115,14 +109,12 @@ class UserDbStorageTest {
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
         User savedUser1 = userStorage.add(user1);
-
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
         User savedUser2 = userStorage.add(user2);
-
         userStorage.addFriend(Math.toIntExact(savedUser1.getId()), Math.toIntExact(savedUser2.getId()));
         userStorage.removeFriend(Math.toIntExact(savedUser1.getId()), Math.toIntExact(savedUser2.getId()));
         List<User> friends = userStorage.getFriends(Math.toIntExact(savedUser1.getId()));
@@ -137,14 +129,12 @@ class UserDbStorageTest {
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
         User savedUser1 = userStorage.add(user1);
-
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
         User savedUser2 = userStorage.add(user2);
-
         userStorage.addFriend(Math.toIntExact(savedUser1.getId()), Math.toIntExact(savedUser2.getId()));
         List<User> friends = userStorage.getFriends(Math.toIntExact(savedUser1.getId()));
         assertThat(friends).hasSize(1);
@@ -158,21 +148,18 @@ class UserDbStorageTest {
         user1.setName("Test User1");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
         User savedUser1 = userStorage.add(user1);
-
         User user2 = new User();
         user2.setEmail("test2@example.com");
         user2.setLogin("testLogin2");
         user2.setName("Test User2");
         user2.setBirthday(LocalDate.of(1991, 1, 1));
         User savedUser2 = userStorage.add(user2);
-
         User user3 = new User();
         user3.setEmail("test3@example.com");
         user3.setLogin("testLogin3");
         user3.setName("Test User3");
         user3.setBirthday(LocalDate.of(1992, 1, 1));
         User savedUser3 = userStorage.add(user3);
-
         userStorage.addFriend(Math.toIntExact(savedUser1.getId()), Math.toIntExact(savedUser3.getId()));
         userStorage.addFriend(Math.toIntExact(savedUser2.getId()), Math.toIntExact(savedUser3.getId()));
         List<User> commonFriends = userStorage.getCommonFriends(Math.toIntExact(savedUser1.getId()), Math.toIntExact(savedUser2.getId()));

@@ -17,6 +17,7 @@ import java.util.*;
 @Repository("userDbStorage")
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override

@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override

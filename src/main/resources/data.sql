@@ -1,6 +1,5 @@
 DELETE FROM genres;
 DELETE FROM mpa_ratings;
-
 INSERT INTO genres (name) VALUES
     ('Comedy'),
     ('Drama'),
@@ -8,7 +7,6 @@ INSERT INTO genres (name) VALUES
     ('Thriller'),
     ('Documentary'),
     ('Militant');
-
 INSERT INTO mpa_ratings (name) VALUES
     ('G'),
     ('PG'),

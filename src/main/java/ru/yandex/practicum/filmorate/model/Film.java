@@ -4,8 +4,8 @@ import jakarta.validation.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
+import jakarta.validation.constraints.Size;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,6 +18,7 @@ import java.util.Set;
 @Data
 @Valid
 public class Film {
+
     private Long id;
 
     @NotBlank(message = "Название фильма не может быть пустым")
@@ -39,7 +40,7 @@ public class Film {
 
     private Set<Long> likes = new HashSet<>();
 
-    @Target({ElementType.FIELD})
+    @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
     @Constraint(validatedBy = FilmReleaseDateValidator.class)
     public @interface FilmReleaseDate {

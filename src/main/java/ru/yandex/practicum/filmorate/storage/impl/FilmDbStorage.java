@@ -17,6 +17,7 @@ import java.util.*;
 @Repository("filmDbStorage")
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -116,7 +117,6 @@ public class FilmDbStorage implements FilmStorage {
         if (!rs.wasNull()) {
             film.setMpaRatingId(mpaRatingId);
         }
-
         String genreIds = rs.getString("genre_ids");
         Set<Integer> genreIdSet = new HashSet<>();
         if (genreIds != null && !genreIds.isEmpty()) {
@@ -126,7 +126,6 @@ public class FilmDbStorage implements FilmStorage {
                     .forEach(genreIdSet::add);
         }
         film.setGenreIds(genreIdSet);
-
         String likeIds = rs.getString("like_ids");
         Set<Long> likeIdSet = new HashSet<>();
         if (likeIds != null && !likeIds.isEmpty()) {
@@ -136,7 +135,6 @@ public class FilmDbStorage implements FilmStorage {
                     .forEach(likeIdSet::add);
         }
         film.setLikes(likeIdSet);
-
         return film;
     }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class GenreService {
+
     private final GenreStorage genreStorage;
 
     public List<Genre> findAll() {

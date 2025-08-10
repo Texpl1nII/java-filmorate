@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-@Component
+@Component("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final ConcurrentHashMap<Long, User> users = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Set<Long>> friendships = new ConcurrentHashMap<>();
@@ -72,7 +72,7 @@ public class InMemoryUserStorage implements UserStorage {
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         Set<Long> friendIds = friendships.getOrDefault((long) userId, Set.of());
         return friendIds.stream()
-                .map((Long id) -> findById(Math.toIntExact(id)))
+                .map(id -> findById(Math.toIntExact(id)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
@@ -88,7 +88,7 @@ public class InMemoryUserStorage implements UserStorage {
         Set<Long> otherFriends = friendships.getOrDefault((long) otherId, Set.of());
         return userFriends.stream()
                 .filter(otherFriends::contains)
-                .map((Long id) -> findById(Math.toIntExact(id)))
+                .map(id -> findById(Math.toIntExact(id)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
