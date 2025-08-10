@@ -47,18 +47,18 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        User user = findById(userId)
+        findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        User friend = findById(friendId)
+        findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
         friendships.computeIfAbsent((long) userId, k -> ConcurrentHashMap.newKeySet()).add((long) friendId);
     }
 
     @Override
     public void removeFriend(int userId, int friendId) {
-        User user = findById(userId)
+        findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        User friend = findById(friendId)
+        findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
         Set<Long> friends = friendships.get((long) userId);
         if (friends != null) {
@@ -68,7 +68,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(int userId) {
-        User user = findById(userId)
+        findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         Set<Long> friendIds = friendships.getOrDefault((long) userId, Set.of());
         return friendIds.stream()
@@ -80,9 +80,9 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
-        User user = findById(userId)
+        findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        User other = findById(otherId)
+        findById(otherId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + otherId + " not found"));
         Set<Long> userFriends = friendships.getOrDefault((long) userId, Set.of());
         Set<Long> otherFriends = friendships.getOrDefault((long) otherId, Set.of());

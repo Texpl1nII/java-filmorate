@@ -1,3 +1,6 @@
+DELETE FROM genres;
+DELETE FROM mpa_ratings;
+
 INSERT INTO genres (name) VALUES
     ('Comedy'),
     ('Drama'),

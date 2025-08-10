@@ -29,7 +29,7 @@ public class FilmDbStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
-            ps.setObject(5, film.getMpaRatingId());
+            ps.setObject(5, film.getMpaRatingId(), java.sql.Types.INTEGER);
             return ps;
         }, keyHolder);
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
@@ -99,8 +99,9 @@ public class FilmDbStorage implements FilmStorage {
     private void saveGenres(Film film) {
         if (film.getGenreIds() != null && !film.getGenreIds().isEmpty()) {
             String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-            film.getGenreIds().forEach(genreId ->
-                    jdbcTemplate.update(sql, film.getId(), genreId));
+            for (Integer genreId : film.getGenreIds()) {
+                jdbcTemplate.update(sql, film.getId(), genreId);
+            }
         }
     }
 
@@ -111,9 +112,9 @@ public class FilmDbStorage implements FilmStorage {
         film.setDescription(rs.getString("description"));
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
-        film.setMpaRatingId(rs.getInt("mpa_rating_id"));
-        if (rs.getInt("mpa_rating_id") == 0) {
-            film.setMpaRatingId(null);
+        int mpaRatingId = rs.getInt("mpa_rating_id");
+        if (!rs.wasNull()) {
+            film.setMpaRatingId(mpaRatingId);
         }
 
         String genreIds = rs.getString("genre_ids");
