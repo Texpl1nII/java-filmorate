@@ -12,11 +12,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Repository("filmDbStorage")
 @RequiredArgsConstructor
@@ -36,7 +32,7 @@ public class FilmDbStorage implements FilmStorage {
             ps.setObject(5, film.getMpaRatingId());
             return ps;
         }, keyHolder);
-        film.setId(keyHolder.getKey().longValue());
+        film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         saveGenres(film);
         if (film.getLikes() == null) {
             film.setLikes(new HashSet<>());

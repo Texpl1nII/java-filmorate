@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate;
 
-import jakarta.validation.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.User;
@@ -113,9 +116,11 @@ public class UserTest {
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
+        user.ensureValidName();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty(), "Valid user with null name should pass");
-        assertEquals("testuser", user.getName(), "Name should default to login");
+        assertTrue(violations.isEmpty(), "Пользователь с именем установленным как логин должен пройти проверку");
+        assertEquals("testuser", user.getName(), "Имя должно быть равно логину");
     }
 
     @Test

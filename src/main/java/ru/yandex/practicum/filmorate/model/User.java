@@ -26,4 +26,10 @@ public class User {
     private LocalDate birthday;
 
     private Set<Long> friends = new HashSet<>();
+
+    public void ensureValidName() {
+        if (this.name == null || this.name.trim().isEmpty()) {
+            this.name = this.login;
+        }
+    }
 }
