@@ -128,11 +128,13 @@ public class UserTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testuser");
-        user.setName("");
+        user.setName(""); // Имя задаём пустым
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
+        user.ensureValidName();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertTrue(violations.isEmpty(), "Valid user with empty name should pass");
-        assertEquals("testuser", user.getName(), "Name should default to login");
+        assertTrue(violations.isEmpty(), "Проверка должна завершиться успехом");
+        assertEquals("testuser", user.getName(), "Имя должно стать равным логину");
     }
 }
