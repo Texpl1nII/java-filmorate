@@ -26,6 +26,7 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
         return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId));
     }
+
     @Override
     public User add(User user) {
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
