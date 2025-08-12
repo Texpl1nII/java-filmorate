@@ -64,9 +64,14 @@ public class UserController {
     public User getFriend(@PathVariable int id, @PathVariable int friendId) {
         userService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
-
-        return userService.findById(friendId)
+        User friend = userService.findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
+
+        if (!userService.getFriends(id).contains(friend)) {
+            throw new IllegalArgumentException("User " + friendId + " is not a friend of user " + id);
+        }
+
+        return friend;
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
