@@ -33,4 +33,15 @@ public class User {
             this.name = this.login;
         }
     }
+    public void addFriend(Long friendId) {
+        friends.add(friendId);
+    }
+
+    public void removeFriend(Long friendId) {
+        friends.remove(friendId);
+    }
+
+    public int getFriendsCount() {
+        return friends.size();
+    }
 }

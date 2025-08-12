@@ -13,11 +13,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Repository("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
@@ -58,13 +54,12 @@ public class FilmDbStorage implements FilmStorage {
         film.setId(keyHolder.getKey().longValue());
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            List<Genre> uniqueGenres = film.getGenres().stream()
-                    .distinct()
-                    .collect(Collectors.toList());
+            Set<Genre> uniqueGenres = new LinkedHashSet<>(film.getGenres());
             for (Genre genre : uniqueGenres) {
                 jdbcTemplate.update("INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                         film.getId(), genre.getId());
             }
+            film.setGenres(new ArrayList<>(uniqueGenres));
         }
 
         film.setLikes(new HashSet<>());
@@ -80,13 +75,14 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            List<Genre> uniqueGenres = film.getGenres().stream()
-                    .distinct()
-                    .collect(Collectors.toList());
+            Set<Genre> uniqueGenres = new LinkedHashSet<>(film.getGenres());
             for (Genre genre : uniqueGenres) {
                 jdbcTemplate.update("INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                         film.getId(), genre.getId());
             }
+            film.setGenres(new ArrayList<>(uniqueGenres));
+        } else {
+            film.setGenres(new ArrayList<>());
         }
 
         return film;

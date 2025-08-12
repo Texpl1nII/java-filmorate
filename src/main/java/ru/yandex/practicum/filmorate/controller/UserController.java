@@ -32,6 +32,22 @@ public class UserController {
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
     }
 
+    @GetMapping("/{id}/friends/{friendId}")
+    public User getFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.debug("Getting friend {} of user {}", friendId, id);
+        User user = userService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
+
+        User friend = userService.findById(friendId)
+                .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
+
+        if (!user.getFriends().contains(friend.getId())) {
+            throw new IllegalArgumentException("User " + friendId + " is not a friend of user " + id);
+        }
+
+        return friend;
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.debug("Creating new user: {}", user.getEmail());
@@ -60,18 +76,10 @@ public class UserController {
         userService.removeFriend(id, friendId);
     }
 
-    @GetMapping("/{id}/friends/{friendId}")
-    public User getFriend(@PathVariable int id, @PathVariable int friendId) {
-        userService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
-        User friend = userService.findById(friendId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
-
-        if (!userService.getFriends(id).contains(friend)) {
-            throw new IllegalArgumentException("User " + friendId + " is not a friend of user " + id);
-        }
-
-        return friend;
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable int id) {
+        log.debug("Requesting friends for user {}", id);
+        return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
