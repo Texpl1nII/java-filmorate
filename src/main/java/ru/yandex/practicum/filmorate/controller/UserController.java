@@ -43,6 +43,8 @@ public class UserController {
     public User update(@Valid @RequestBody User user) {
         log.debug("Updating user with id: {}", user.getId());
         user.ensureValidName();
+        userService.findById(Math.toIntExact(user.getId()))
+                .orElseThrow(() -> new IllegalArgumentException("User with id " + user.getId() + " not found"));
         return userService.update(user);
     }
 

@@ -6,9 +6,9 @@ INSERT INTO mpa_ratings (name) VALUES
     ('NC-17');
 
 INSERT INTO genres (name) VALUES
-    ('Comedy'),
-    ('Drama'),
-    ('Animation'),
-    ('Thriller'),
-    ('Documentary'),
-    ('Militant');
+    ('Комедия'),
+    ('Драма'),
+    ('Мультфильм'),
+    ('Триллер'),
+    ('Документальный'),
+    ('Боевик');

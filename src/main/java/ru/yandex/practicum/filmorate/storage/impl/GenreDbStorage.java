@@ -1,39 +1,39 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
+    public GenreDbStorage(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
     @Override
     public List<Genre> findAll() {
-        String sql = "SELECT * FROM genres";
-        return jdbcTemplate.query(sql, this::mapRowToGenre);
+        String sql = "SELECT genre_id as id, name FROM genres ORDER BY genre_id";
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new Genre(rs.getInt("id"), rs.getString("name")));
     }
 
     @Override
     public Optional<Genre> findById(int id) {
-        String sql = "SELECT * FROM genres WHERE genre_id = ?";
-        List<Genre> genres = jdbcTemplate.query(sql, this::mapRowToGenre, id);
-        return genres.isEmpty() ? Optional.empty() : Optional.of(genres.get(0));
-    }
-
-    private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
-        Genre genre = new Genre();
-        genre.setId(rs.getInt("genre_id"));
-        genre.setName(rs.getString("name"));
-        return genre;
+        String sql = "SELECT genre_id as id, name FROM genres WHERE genre_id = ?";
+        try {
+            Genre genre = jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
+                    new Genre(rs.getInt("id"), rs.getString("name")), id);
+            return Optional.ofNullable(genre);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 }

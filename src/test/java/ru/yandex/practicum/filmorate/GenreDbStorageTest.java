@@ -25,7 +25,7 @@ class GenreDbStorageTest {
     void testFindAllGenres() {
         List<Genre> genres = genreStorage.findAll();
         assertThat(genres).hasSize(6);
-        assertThat(genres).anyMatch(g -> g.getName().equals("Comedy"));
+        assertThat(genres).anyMatch(g -> g.getName().equals("Комедия"));
     }
 
     @Test
@@ -33,6 +33,6 @@ class GenreDbStorageTest {
         Optional<Genre> genreOptional = genreStorage.findById(1);
         assertThat(genreOptional)
                 .isPresent()
-                .hasValueSatisfying(g -> assertThat(g).hasFieldOrPropertyWithValue("name", "Comedy"));
+                .hasValueSatisfying(g -> assertThat(g).hasFieldOrPropertyWithValue("name", "Комедия"));
     }
 }
