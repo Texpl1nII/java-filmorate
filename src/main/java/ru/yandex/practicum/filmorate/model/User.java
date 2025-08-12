@@ -33,6 +33,7 @@ public class User {
             this.name = this.login;
         }
     }
+
     public void addFriend(Long friendId) {
         friends.add(friendId);
     }
