@@ -6,15 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.storage.impl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, UserDbStorage.class})
+@Sql(scripts = {"classpath:schema.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class FilmDbStorageTest {
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
@@ -30,141 +33,129 @@ class FilmDbStorageTest {
     void testAddFilm() {
         Film film = new Film();
         film.setName("Test Film");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDescription("This is a test film.");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpaRatingId(1);
-        film.setGenreIds(Set.of(1, 2));
+        film.setMpa(new MpaRating(1, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1, "Action")));
 
         Film savedFilm = filmStorage.add(film);
         assertThat(savedFilm).isNotNull();
         assertThat(savedFilm.getId()).isGreaterThan(0);
-        assertThat(savedFilm.getGenreIds()).contains(1, 2);
     }
 
     @Test
     void testUpdateFilm() {
         Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setName("Original Title");
+        film.setDescription("Original Description");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpaRatingId(1);
+        film.setMpa(new MpaRating(1, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1, "Action")));
+
         Film savedFilm = filmStorage.add(film);
 
-        savedFilm.setName("Updated Film");
-        savedFilm.setGenreIds(Set.of(3));
+        savedFilm.setName("Updated Title");
+        savedFilm.setGenres(List.of(new Genre(2, "Comedy")));
+
         Film updatedFilm = filmStorage.update(savedFilm);
-        assertThat(updatedFilm.getName()).isEqualTo("Updated Film");
-        assertThat(updatedFilm.getGenreIds()).containsExactly(3);
+        assertThat(updatedFilm.getName()).isEqualTo("Updated Title");
+        assertThat(updatedFilm.getGenres()).extracting(Genre::getId).containsExactlyInAnyOrder(2);
     }
 
     @Test
     void testFindFilmById() {
         Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setName("Searchable Film");
+        film.setDescription("Testing search by ID.");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpaRatingId(1);
-        Film savedFilm = filmStorage.add(film);
+        film.setMpa(new MpaRating(1, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1, "Action")));
 
-        Optional<Film> filmOptional = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
-        assertThat(filmOptional)
-                .isPresent()
-                .hasValueSatisfying(f -> assertThat(f).hasFieldOrPropertyWithValue("id", savedFilm.getId()));
+        Film savedFilm = filmStorage.add(film);
+        Optional<Film> foundFilm = filmStorage.findById(savedFilm.getId());
+        assertThat(foundFilm).isPresent();
+        assertThat(foundFilm.get().getName()).isEqualTo("Searchable Film");
     }
 
     @Test
     void testFindAllFilms() {
         Film film1 = new Film();
-        film1.setName("Test Film1");
-        film1.setDescription("Description1");
-        film1.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film1.setName("First Film");
+        film1.setDescription("First movie.");
+        film1.setReleaseDate(LocalDate.of(2020, 1, 1));
         film1.setDuration(120);
-        film1.setMpaRatingId(1);
+        film1.setMpa(new MpaRating(1, "MPA Rating"));
+        film1.setGenres(List.of(new Genre(1, "Action")));
         filmStorage.add(film1);
 
         Film film2 = new Film();
-        film2.setName("Test Film2");
-        film2.setDescription("Description2");
-        film2.setReleaseDate(LocalDate.of(2001, 1, 1));
-        film2.setDuration(100);
-        film2.setMpaRatingId(2);
+        film2.setName("Second Film");
+        film2.setDescription("Second movie.");
+        film2.setReleaseDate(LocalDate.of(2021, 1, 1));
+        film2.setDuration(150);
+        film2.setMpa(new MpaRating(2, "Another MPA Rating"));
+        film2.setGenres(List.of(new Genre(2, "Drama")));
         filmStorage.add(film2);
 
-        List<Film> films = filmStorage.findAll();
-        assertThat(films).hasSize(2);
+        List<Film> allFilms = filmStorage.findAll();
+        assertThat(allFilms).hasSize(2);
     }
 
     @Test
-    void testAddLike() {
+    void testAddAndRemoveLike() {
         User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testLogin");
-        user.setName("Test User");
+        user.setEmail("test@test.ru");
+        user.setLogin("test_login");
+        user.setName("Test Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         User savedUser = userStorage.add(user);
 
         Film film = new Film();
         film.setName("Test Film");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDescription("Test movie.");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpaRatingId(1);
+        film.setMpa(new MpaRating(1, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1, "Action")));
         Film savedFilm = filmStorage.add(film);
 
         filmStorage.addLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
-        Optional<Film> filmOptional = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
-        assertThat(filmOptional.get().getLikes()).contains(savedUser.getId());
-    }
+        Optional<Film> likedFilm = filmStorage.findById(savedFilm.getId());
+        assertThat(likedFilm.get().getLikes()).contains(savedUser.getId());
 
-    @Test
-    void testRemoveLike() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testLogin");
-        user.setName("Test User");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        User savedUser = userStorage.add(user);
-
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
-        film.setMpaRatingId(1);
-        Film savedFilm = filmStorage.add(film);
-
-        filmStorage.addLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
         filmStorage.removeLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
-        Optional<Film> filmOptional = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
-        assertThat(filmOptional.get().getLikes()).doesNotContain(savedUser.getId());
+        Optional<Film> unlikedFilm = filmStorage.findById(savedFilm.getId());
+        assertThat(unlikedFilm.get().getLikes()).doesNotContain(savedUser.getId());
     }
 
     @Test
     void testGetPopularFilms() {
         User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testLogin");
-        user.setName("Test User");
+        user.setEmail("test@test.ru");
+        user.setLogin("test_login");
+        user.setName("Test Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
-        User savedUser = userStorage.add(user);
+        User savedUser = userStorage.add(user); // Пользователь для лайков
 
         Film film1 = new Film();
-        film1.setName("Test Film1");
-        film1.setDescription("Description1");
-        film1.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film1.setName("Most Liked Film");
+        film1.setDescription("Movie with many likes.");
+        film1.setReleaseDate(LocalDate.of(2020, 1, 1));
         film1.setDuration(120);
-        film1.setMpaRatingId(1);
+        film1.setMpa(new MpaRating(1, "MPA Rating"));
+        film1.setGenres(List.of(new Genre(1, "Action")));
         Film savedFilm1 = filmStorage.add(film1);
 
         Film film2 = new Film();
-        film2.setName("Test Film2");
-        film2.setDescription("Description2");
-        film2.setReleaseDate(LocalDate.of(2001, 1, 1));
-        film2.setDuration(100);
-        film2.setMpaRatingId(2);
+        film2.setName("Less Liked Film");
+        film2.setDescription("Movie with fewer likes.");
+        film2.setReleaseDate(LocalDate.of(2021, 1, 1));
+        film2.setDuration(150);
+        film2.setMpa(new MpaRating(2, "Another MPA Rating"));
+        film2.setGenres(List.of(new Genre(2, "Drama")));
         Film savedFilm2 = filmStorage.add(film2);
 
         filmStorage.addLike(Math.toIntExact(savedFilm1.getId()), Math.toIntExact(savedUser.getId()));

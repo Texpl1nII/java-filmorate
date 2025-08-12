@@ -13,6 +13,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -34,9 +35,10 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private int duration;
 
-    private Integer mpaRatingId;
+    @NotNull(message = "Рейтинг MPA обязателен.")
+    private MpaRating mpa;
 
-    private Set<Integer> genreIds = new HashSet<>();
+    private List<Genre> genres;
 
     private Set<Long> likes = new HashSet<>();
 
@@ -45,15 +47,16 @@ public class Film {
     @Constraint(validatedBy = FilmReleaseDateValidator.class)
     public @interface FilmReleaseDate {
         String message() default "Дата выпуска не может быть раньше 28 декабря 1895 года.";
-
         Class<?>[] groups() default {};
-
         Class<? extends Payload>[] payload() default {};
     }
 
     public static class FilmReleaseDateValidator implements ConstraintValidator<FilmReleaseDate, LocalDate> {
         private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
+        /**
+         * @param constraintAnnotation annotation instance for a given constraint declaration
+         */
         @Override
         public void initialize(FilmReleaseDate constraintAnnotation) {
         }

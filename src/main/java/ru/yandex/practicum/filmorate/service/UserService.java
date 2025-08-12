@@ -13,7 +13,7 @@ public class UserService {
 
     private final UserStorage userStorage;
 
-    public UserService(@Qualifier("inMemoryUserStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -34,10 +34,14 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
+        findById(userId).orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
+        findById(friendId).orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
         userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
+        findById(userId).orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
+        findById(friendId).orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
         userStorage.removeFriend(userId, friendId);
     }
 

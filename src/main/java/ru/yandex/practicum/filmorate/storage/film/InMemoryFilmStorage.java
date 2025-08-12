@@ -8,9 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-@Component("inMemoryFilmStorage")
+@Component
 public class InMemoryFilmStorage implements FilmStorage {
-
     private final ConcurrentHashMap<Long, Film> films = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(0);
 
@@ -37,7 +36,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(int id) {
+    public Optional<Film> findById(Long id) {
         return Optional.ofNullable(films.get((long) id));
     }
 
@@ -48,14 +47,14 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
-        Film film = findById(filmId)
+        Film film = findById((long) filmId)
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
         film.getLikes().add((long) userId);
     }
 
     @Override
     public void removeLike(int filmId, int userId) {
-        Film film = findById(filmId)
+        Film film = findById((long) filmId)
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
         film.getLikes().remove((long) userId);
     }

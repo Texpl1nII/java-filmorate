@@ -35,12 +35,14 @@ public class UserController {
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.debug("Creating new user: {}", user.getEmail());
+        user.ensureValidName();
         return userService.add(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         log.debug("Updating user with id: {}", user.getId());
+        user.ensureValidName();
         return userService.update(user);
     }
 

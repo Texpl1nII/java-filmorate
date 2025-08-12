@@ -7,6 +7,7 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -30,6 +31,7 @@ public class FilmTest {
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(120);
+        film.setMpa(new MpaRating(1, "G"));
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty(), "Фильм с неверной датой выпуска должен нарушать правила.");
@@ -45,6 +47,7 @@ public class FilmTest {
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
         film.setDuration(120);
+        film.setMpa(new MpaRating(1, "G"));
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty(), "Правильная дата выпуска не должна приводить к нарушениям.");
@@ -57,6 +60,7 @@ public class FilmTest {
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
+        film.setMpa(new MpaRating(1, "G"));
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty(), "Пустое название нарушает правило.");
@@ -72,6 +76,7 @@ public class FilmTest {
         film.setDescription("A".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
+        film.setMpa(new MpaRating(1, "G"));
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty(), "Слишком длинное описание нарушает правило.");
@@ -87,11 +92,28 @@ public class FilmTest {
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(-1);
+        film.setMpa(new MpaRating(1, "G"));
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty(), "Отрицательная длительность нарушает правило.");
         assertEquals(1, violations.size(), "Ожидаем одну ошибку.");
         assertTrue(violations.iterator().next().getMessage().contains("Продолжительность"),
                 "Ошибка должна указывать на неправильность продолжительности.");
+    }
+
+    @Test
+    void shouldFailWhenMpaIsNull() {
+        Film film = new Film();
+        film.setName("Test Film");
+        film.setDescription("Test Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(120);
+        film.setMpa(null);
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty(), "Null MPA should violate the constraint.");
+        assertEquals(1, violations.size(), "Expected exactly one violation.");
+        assertTrue(violations.iterator().next().getMessage().contains("Рейтинг MPA"),
+                "Violation should relate to MPA rating.");
     }
 }

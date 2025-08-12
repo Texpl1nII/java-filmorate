@@ -26,9 +26,9 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film findById(@PathVariable int id) {
+    public Film findById(@PathVariable long id) {
         log.debug("Finding film with id: {}", id);
-        return filmService.findById(id)
+        return filmService.findById((int) id)
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + id + " not found"));
     }
 
