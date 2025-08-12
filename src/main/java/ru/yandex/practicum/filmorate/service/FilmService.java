@@ -34,15 +34,23 @@ public class FilmService {
     }
 
     public Film add(Film film) {
-        // Проверка существования MPA
-        if (film.getMpa() != null) {
-            mpaRatingService.findById(film.getMpa().getId());
+        if (film.getMpa() == null || film.getMpa().getId() == null) {
+            throw new IllegalArgumentException("MPA rating is required");
         }
 
-        // Проверка существования жанров
-        if (film.getGenres() != null) {
+        try {
+            mpaRatingService.findById(film.getMpa().getId());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid MPA rating: " + film.getMpa().getId());
+        }
+
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
-                genreService.findById(genre.getId());
+                try {
+                    genreService.findById(genre.getId());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Invalid genre: " + genre.getId());
+                }
             }
         }
 
@@ -50,16 +58,13 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        // Проверка существования фильма
         findById(Math.toIntExact(film.getId()))
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + film.getId() + " not found"));
 
-        // Проверка существования MPA
         if (film.getMpa() != null) {
             mpaRatingService.findById(film.getMpa().getId());
         }
 
-        // Проверка существования жанров
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 genreService.findById(genre.getId());
@@ -70,7 +75,6 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        // Проверка существования фильма
         findById(filmId)
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
 
@@ -78,7 +82,6 @@ public class FilmService {
     }
 
     public void removeLike(int filmId, int userId) {
-        // Проверка существования фильма
         findById(filmId)
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
 

@@ -60,10 +60,13 @@ public class UserController {
         userService.removeFriend(id, friendId);
     }
 
-    @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable int id) {
-        log.debug("Requesting friends for user {}", id);
-        return userService.getFriends(id);
+    @GetMapping("/{id}/friends/{friendId}")
+    public User getFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
+
+        return userService.findById(friendId)
+                .orElseThrow(() -> new IllegalArgumentException("User with id " + friendId + " not found"));
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
