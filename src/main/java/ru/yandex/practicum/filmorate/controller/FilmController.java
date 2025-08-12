@@ -41,7 +41,6 @@ public class FilmController {
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("Updating film with id: {}", film.getId());
-        // Проверка существования фильма перед обновлением
         filmService.findById(Math.toIntExact(film.getId()))
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + film.getId() + " not found"));
         return filmService.update(film);
@@ -63,5 +62,11 @@ public class FilmController {
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
         log.debug("Requesting top {} popular films", count);
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/genre/{genreId}")
+    public List<Film> getFilmsByGenre(@PathVariable int genreId) {
+        filmService.findById(genreId);
+        return filmService.getFilmsByGenreWithoutDuplicates(genreId);
     }
 }

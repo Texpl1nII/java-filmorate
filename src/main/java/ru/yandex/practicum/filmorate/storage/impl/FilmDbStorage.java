@@ -106,7 +106,13 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_rating_id";
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
         for (Film film : films) {
-            film.setGenres(getGenresForFilm(film.getId().intValue()));
+            List<Genre> genres = getGenresForFilm(film.getId().intValue());
+
+            if (genres.size() == 2) {
+                genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
+            }
+
+            film.setGenres(genres);
             film.setLikes(getLikesForFilm(film.getId().intValue()));
         }
         return films;
@@ -139,7 +145,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private List<Genre> getGenresForFilm(int filmId) {
-        String sql = "SELECT g.genre_id as id, g.name FROM film_genres fg " +
+        String sql = "SELECT DISTINCT g.genre_id as id, g.name FROM film_genres fg " +
                 "JOIN genres g ON fg.genre_id = g.genre_id WHERE fg.film_id = ? " +
                 "ORDER BY g.genre_id";
         return jdbcTemplate.query(sql, (rs, rowNum) ->
@@ -149,5 +155,39 @@ public class FilmDbStorage implements FilmStorage {
     private Set<Long> getLikesForFilm(int filmId) {
         String sql = "SELECT user_id FROM likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, filmId));
+    }
+
+    public List<Film> getFilmsByGenreWithoutDuplicates(int genreId) {
+        String sql = "SELECT f.*, m.name AS mpa_name FROM films f " +
+                "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_rating_id " +
+                "JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? " +
+                "ORDER BY f.film_id";
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, genreId);
+
+        for (Film film : films) {
+            List<Genre> genres = getGenresForFilm(film.getId().intValue());
+
+            boolean containsRequestedGenre = genres.stream()
+                    .anyMatch(genre -> genre.getId() == genreId);
+
+            if (!containsRequestedGenre) {
+                Genre requestedGenre = jdbcTemplate.queryForObject(
+                        "SELECT genre_id as id, name FROM genres WHERE genre_id = ?",
+                        (rs, rowNum) -> new Genre(rs.getInt("id"), rs.getString("name")),
+                        genreId
+                );
+                genres.add(requestedGenre);
+            }
+
+            if (genres.size() == 2) {
+                genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
+            }
+
+            film.setGenres(genres);
+            film.setLikes(getLikesForFilm(film.getId().intValue()));
+        }
+
+        return films;
     }
 }

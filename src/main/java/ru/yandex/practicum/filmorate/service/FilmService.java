@@ -29,6 +29,10 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
+    public List<Film> getFilmsByGenreWithoutDuplicates(int genreId) {
+        return filmStorage.getFilmsByGenreWithoutDuplicates(genreId);
+    }
+
     public Optional<Film> findById(int id) {
         return filmStorage.findById((long) id);
     }

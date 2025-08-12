@@ -66,4 +66,9 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .limit(count)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Film> getFilmsByGenreWithoutDuplicates(int genreId) {
+        return List.of();
+    }
 }
