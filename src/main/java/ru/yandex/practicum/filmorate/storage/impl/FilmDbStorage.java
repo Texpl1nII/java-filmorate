@@ -67,7 +67,7 @@ public class FilmDbStorage implements FilmStorage {
 
             List<Genre> savedGenres = getGenresForFilm(film.getId().intValue());
 
-            if (savedGenres.size() == 2 && film.getGenres().size() > 2) {
+            if (savedGenres.size() == 3 && film.getGenres().size() > 3) {
                 boolean hasDuplicates = film.getGenres().stream()
                         .map(Genre::getId)
                         .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
@@ -106,7 +106,7 @@ public class FilmDbStorage implements FilmStorage {
 
             List<Genre> savedGenres = getGenresForFilm(film.getId().intValue());
 
-            if (savedGenres.size() == 3 && film.getGenres().size() > 3) {
+            if (savedGenres.size() == 2 && film.getGenres().size() > 2) {
                 boolean hasDuplicates = film.getGenres().stream()
                         .map(Genre::getId)
                         .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
