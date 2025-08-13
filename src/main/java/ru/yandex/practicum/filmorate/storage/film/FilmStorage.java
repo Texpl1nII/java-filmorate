@@ -22,4 +22,5 @@ public interface FilmStorage {
 
     List<Film> getFilmsByGenreWithoutDuplicates(int genreId);
 
+    List<Film> getFilmsByGenre(int genreId);
 }

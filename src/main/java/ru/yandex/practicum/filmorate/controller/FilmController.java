@@ -66,7 +66,6 @@ public class FilmController {
 
     @GetMapping("/genre/{genreId}")
     public List<Film> getFilmsByGenre(@PathVariable int genreId) {
-        filmService.findById(genreId);
         return filmService.getFilmsByGenreWithoutDuplicates(genreId);
     }
 }

@@ -30,7 +30,18 @@ public class FilmService {
     }
 
     public List<Film> getFilmsByGenreWithoutDuplicates(int genreId) {
-        return filmStorage.getFilmsByGenreWithoutDuplicates(genreId);
+        List<Film> films = filmStorage.getFilmsByGenre(genreId);
+
+        for (Film film : films) {
+            List<Genre> genres = film.getGenres();
+            if (genres != null && genres.size() == 2) {
+
+                genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
+                film.setGenres(genres);
+            }
+        }
+
+        return films;
     }
 
     public Optional<Film> findById(int id) {

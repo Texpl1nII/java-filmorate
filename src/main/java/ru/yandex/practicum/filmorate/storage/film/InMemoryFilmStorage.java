@@ -71,4 +71,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getFilmsByGenreWithoutDuplicates(int genreId) {
         return List.of();
     }
+
+    @Override
+    public List<Film> getFilmsByGenre(int genreId) {
+        return List.of();
+    }
 }
