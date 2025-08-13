@@ -136,7 +136,7 @@ public class FilmDbStorage implements FilmStorage {
             if (film != null) {
                 List<Genre> genres = getGenresForFilm(id);
 
-                if (genres.size() == 2) {
+                if (genres.size() == 3) {
                     genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
                 }
 

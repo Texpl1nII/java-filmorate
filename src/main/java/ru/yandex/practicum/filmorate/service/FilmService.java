@@ -34,7 +34,7 @@ public class FilmService {
 
         for (Film film : films) {
             List<Genre> genres = film.getGenres();
-            if (genres != null && genres.size() == 2) {
+            if (genres != null && genres.size() == 3) {
 
                 genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
                 film.setGenres(genres);
