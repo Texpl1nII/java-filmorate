@@ -45,7 +45,7 @@ public class FilmService {
     }
 
     public Optional<Film> findById(int id) {
-        return filmStorage.findById((long) id);
+        return filmStorage.findById((int) id);
     }
 
     public Film add(Film film) {

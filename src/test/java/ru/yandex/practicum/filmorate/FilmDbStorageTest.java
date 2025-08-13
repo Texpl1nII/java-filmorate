@@ -75,7 +75,7 @@ class FilmDbStorageTest {
         film.setGenres(List.of(new Genre(1, "Action")));
 
         Film savedFilm = filmStorage.add(film);
-        Optional<Film> foundFilm = filmStorage.findById(savedFilm.getId());
+        Optional<Film> foundFilm = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
         assertThat(foundFilm).isPresent();
         assertThat(foundFilm.get().getName()).isEqualTo("Searchable Film");
     }
@@ -123,11 +123,11 @@ class FilmDbStorageTest {
         Film savedFilm = filmStorage.add(film);
 
         filmStorage.addLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
-        Optional<Film> likedFilm = filmStorage.findById(savedFilm.getId());
+        Optional<Film> likedFilm = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
         assertThat(likedFilm.get().getLikes()).contains(savedUser.getId());
 
         filmStorage.removeLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
-        Optional<Film> unlikedFilm = filmStorage.findById(savedFilm.getId());
+        Optional<Film> unlikedFilm = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
         assertThat(unlikedFilm.get().getLikes()).doesNotContain(savedUser.getId());
     }
 

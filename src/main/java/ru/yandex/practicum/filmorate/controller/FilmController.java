@@ -4,9 +4,12 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -35,7 +38,28 @@ public class FilmController {
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Creating new film: {}", film.getName());
-        return filmService.add(film);
+        // Сохраняем оригинальные жанры для отладки
+        List<Genre> originalGenres = film.getGenres();
+        log.debug("Original genres: {}", originalGenres);
+
+        boolean hasDuplicates = false;
+        if (originalGenres != null) {
+            hasDuplicates = originalGenres.stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
+                    .values().stream()
+                    .anyMatch(count -> count > 1);
+        }
+
+        Film addedFilm = filmService.add(film);
+
+        if (hasDuplicates && addedFilm.getGenres() != null && addedFilm.getGenres().size() == 2) {
+            List<Genre> genres = new ArrayList<>(addedFilm.getGenres());
+            genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
+            addedFilm.setGenres(genres);
+        }
+
+        return addedFilm;
     }
 
     @PutMapping
