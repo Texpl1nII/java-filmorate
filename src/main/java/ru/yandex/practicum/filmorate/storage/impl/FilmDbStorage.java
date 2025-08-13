@@ -15,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
@@ -67,18 +66,6 @@ public class FilmDbStorage implements FilmStorage {
 
             List<Genre> savedGenres = getGenresForFilm(film.getId().intValue());
 
-            if (savedGenres.size() == 2 && film.getGenres().size() > 2) {
-                boolean hasDuplicates = film.getGenres().stream()
-                        .map(Genre::getId)
-                        .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
-                        .values().stream()
-                        .anyMatch(count -> count > 1);
-
-                if (hasDuplicates) {
-                    savedGenres.add(new Genre(savedGenres.get(0).getId(), savedGenres.get(0).getName()));
-                }
-            }
-
             film.setGenres(savedGenres);
         }
 
@@ -106,18 +93,6 @@ public class FilmDbStorage implements FilmStorage {
 
             List<Genre> savedGenres = getGenresForFilm(film.getId().intValue());
 
-            if (savedGenres.size() == 2 && film.getGenres().size() > 2) {
-                boolean hasDuplicates = film.getGenres().stream()
-                        .map(Genre::getId)
-                        .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
-                        .values().stream()
-                        .anyMatch(count -> count > 1);
-
-                if (hasDuplicates) {
-                    savedGenres.add(new Genre(savedGenres.get(0).getId(), savedGenres.get(0).getName()));
-                }
-            }
-
             film.setGenres(savedGenres);
         } else {
             film.setGenres(new ArrayList<>());
@@ -136,10 +111,6 @@ public class FilmDbStorage implements FilmStorage {
             if (film != null) {
                 List<Genre> genres = getGenresForFilm(id);
 
-                if (genres.size() == 3) {
-                    genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
-                }
-
                 film.setGenres(genres);
                 film.setLikes(getLikesForFilm(id));
                 return Optional.of(film);
@@ -156,10 +127,6 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
         for (Film film : films) {
             List<Genre> genres = getGenresForFilm(film.getId().intValue());
-
-            if (genres.size() == 2) {
-                genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
-            }
 
             film.setGenres(genres);
             film.setLikes(getLikesForFilm(film.getId().intValue()));
