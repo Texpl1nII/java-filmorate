@@ -67,23 +67,6 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getFriends(int userId) {
-        return List.of();
-    }
-
-    @Override
-    public List<User> getFriends(long userId) {
-        findById((long) userId)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
-        Set<Long> friendIds = friendships.getOrDefault((long) userId, Set.of());
-        return friendIds.stream()
-                .map((Long id) -> findById((long) Math.toIntExact(id)))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<User> getCommonFriends(Long userId, Long otherId) {
         findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
@@ -97,5 +80,10 @@ public class InMemoryUserStorage implements UserStorage {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> getFriends(Long userId) {
+        return List.of();
     }
 }

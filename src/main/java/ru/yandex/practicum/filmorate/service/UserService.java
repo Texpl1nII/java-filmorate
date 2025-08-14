@@ -13,7 +13,6 @@ import java.util.Optional;
 public class UserService {
 
     private final UserStorage userStorage;
-    private Long friendId;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
@@ -24,7 +23,7 @@ public class UserService {
     }
 
     public Optional<User> findById(Long id) {
-        return userStorage.findById((long) id);
+        return userStorage.findById(id);
     }
 
     public User add(User user) {
@@ -46,15 +45,12 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        this.friendId = friendId;
         User user = findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         User friend = findById(friendId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + friendId + " not found"));
 
         userStorage.addFriend(userId, friendId);
-
-        user.addFriend((long) friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
@@ -64,8 +60,6 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + friendId + " not found"));
 
         userStorage.removeFriend(userId, friendId);
-
-        user.removeFriend((long) friendId);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
@@ -77,19 +71,17 @@ public class UserService {
         return userStorage.getCommonFriends(userId, otherId);
     }
 
-    public User getFriends(Long userId) {
-        User user = userStorage.findById((long) Math.toIntExact(userId))
+    public List<User> getFriends(Long userId) {
+        User user = findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
-        return userStorage.findById((long) Math.toIntExact(friendId))
-                .orElseThrow(() -> new EntityNotFoundException("Friend with id " + friendId + " not found"));
+        return userStorage.getFriends(userId);
     }
 
     public User getFriend(Long userId, Long friendId) {
-        User user = userStorage.findById(userId)
+        User user = findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
-        return userStorage.findById(friendId)
+        return findById(friendId)
                 .orElseThrow(() -> new EntityNotFoundException("Friend with id " + friendId + " not found"));
     }
 }

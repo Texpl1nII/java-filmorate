@@ -96,7 +96,7 @@ class UserDbStorageTest {
         user2.setBirthday(LocalDate.of(1991, 1, 1));
         User savedUser2 = userStorage.add(user2);
         userStorage.addFriend((long) Math.toIntExact(savedUser1.getId()), (long) Math.toIntExact(savedUser2.getId()));
-        List<User> friends = userStorage.getFriends(Math.toIntExact(savedUser1.getId()));
+        List<User> friends = userStorage.getFriends((long) Math.toIntExact(savedUser1.getId()));
         assertThat(friends).hasSize(1);
         assertThat(friends.get(0).getId()).isEqualTo(savedUser2.getId());
     }
@@ -117,7 +117,7 @@ class UserDbStorageTest {
         User savedUser2 = userStorage.add(user2);
         userStorage.addFriend((long) Math.toIntExact(savedUser1.getId()), (long) Math.toIntExact(savedUser2.getId()));
         userStorage.removeFriend((long) Math.toIntExact(savedUser1.getId()), (long) Math.toIntExact(savedUser2.getId()));
-        List<User> friends = userStorage.getFriends(Math.toIntExact(savedUser1.getId()));
+        List<User> friends = userStorage.getFriends((long) Math.toIntExact(savedUser1.getId()));
         assertThat(friends).isEmpty();
     }
 
@@ -136,7 +136,7 @@ class UserDbStorageTest {
         user2.setBirthday(LocalDate.of(1991, 1, 1));
         User savedUser2 = userStorage.add(user2);
         userStorage.addFriend((long) Math.toIntExact(savedUser1.getId()), (long) Math.toIntExact(savedUser2.getId()));
-        List<User> friends = userStorage.getFriends(Math.toIntExact(savedUser1.getId()));
+        List<User> friends = userStorage.getFriends((long) Math.toIntExact(savedUser1.getId()));
         assertThat(friends).hasSize(1);
     }
 

@@ -60,6 +60,12 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    private Set<Long> getFriendIds(Long userId) {
+        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
+        List<Long> friendIds = jdbcTemplate.queryForList(sql, Long.class, userId);
+        return new HashSet<>(friendIds);
+    }
+
     @Override
     public List<User> findAll() {
         String sql = "SELECT * FROM users";
@@ -72,13 +78,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        // Проверка существования пользователей
+
         findById(userId).orElseThrow(() ->
                 new IllegalArgumentException("User with id " + userId + " not found"));
         findById(friendId).orElseThrow(() ->
                 new IllegalArgumentException("User with id " + friendId + " not found"));
 
-        // Добавление записи о дружбе
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
     }
@@ -92,28 +97,6 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
-    }
-
-    @Override
-    public List<User> getFriends(int userId) {
-        findById((long) userId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + userId + " not found"));
-
-        String sql = "SELECT u.* FROM users u " +
-                "JOIN friends f ON u.user_id = f.friend_id " +
-                "WHERE f.user_id = ?";
-        List<User> friends = jdbcTemplate.query(sql, this::mapRowToUser, userId);
-
-        for (User friend : friends) {
-            friend.setFriends(getFriendIds((long) Math.toIntExact(friend.getId())));
-        }
-
-        return friends;
-    }
-
-    @Override
-    public List<User> getFriends(long userId) {
-        return List.of();
     }
 
     @Override
@@ -147,9 +130,20 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-    private Set<Long> getFriendIds(Long userId) {
-        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
-        List<Long> friendIds = jdbcTemplate.queryForList(sql, Long.class, userId);
-        return new HashSet<>(friendIds);
+    @Override
+    public List<User> getFriends(Long userId) {
+        findById(userId).orElseThrow(() ->
+                new IllegalArgumentException("User with id " + userId + " not found"));
+
+        String sql = "SELECT u.* FROM users u " +
+                "JOIN friends f ON u.user_id = f.friend_id " +
+                "WHERE f.user_id = ?";
+        List<User> friends = jdbcTemplate.query(sql, this::mapRowToUser, userId);
+
+        for (User friend : friends) {
+            friend.setFriends(getFriendIds(friend.getId()));
+        }
+
+        return friends;
     }
 }

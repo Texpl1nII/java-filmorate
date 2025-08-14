@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -65,9 +64,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable Long id) {  // Изменено с int на Long
+    public List<User> getFriends(@PathVariable Long id) {
         log.debug("Requesting friends for user {}", id);
-        return Collections.singletonList(userService.getFriends(id));
+        return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
