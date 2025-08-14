@@ -26,14 +26,14 @@ class MpaRatingDbStorageTest {
     void testFindAllMpaRatings() {
         List<MpaRating> ratings = mpaRatingStorage.findAll();
         assertThat(ratings).hasSize(5);
-        assertThat(ratings).anyMatch(r -> r.getName().equals("G"));
+        assertThat(ratings).anyMatch(MpaRating -> MpaRating.getName().equals("G"));
     }
 
     @Test
     void testFindMpaRatingById() {
-        Optional<MpaRating> ratingOptional = mpaRatingStorage.findById(1);
+        Optional<MpaRating> ratingOptional = mpaRatingStorage.findById(1L);
         assertThat(ratingOptional)
                 .isPresent()
-                .hasValueSatisfying(r -> assertThat(r).hasFieldOrPropertyWithValue("name", "G"));
+                .hasValueSatisfying(MpaRating -> assertThat(MpaRating).hasFieldOrPropertyWithValue("name", "G"));
     }
 }

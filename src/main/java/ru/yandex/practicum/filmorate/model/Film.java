@@ -1,69 +1,35 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import jakarta.validation.constraints.Size;
+import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
-@Valid
+@AllArgsConstructor
+@NoArgsConstructor
 public class Film {
-
     private Long id;
 
     @NotBlank(message = "Название фильма не может быть пустым")
     private String name;
 
-    @Size(max = 200, message = "Описание не должно превышать 200 символов")
+    @Size(max = 200, message = "Описание фильма не может быть более 200 символов")
     private String description;
 
-    @NotNull(message = "Дата выпуска не может быть пустой")
-    @FilmReleaseDate(message = "Дата выпуска не может быть раньше 28 декабря 1895 года")
+    @FilmReleaseDate
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private int duration;
 
-    @NotNull(message = "Рейтинг MPA обязателен.")
+    @NotNull(message = "Рейтинг MPA не может быть пустым")
     private MpaRating mpa;
 
-    private List<Genre> genres;
-
+    private List<Genre> genres = new ArrayList<>();
     private Set<Long> likes = new HashSet<>();
-
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @Constraint(validatedBy = FilmReleaseDateValidator.class)
-    public @interface FilmReleaseDate {
-        String message() default "Дата выпуска не может быть раньше 28 декабря 1895 года.";
-        Class<?>[] groups() default {};
-        Class<? extends Payload>[] payload() default {};
-    }
-
-    public static class FilmReleaseDateValidator implements ConstraintValidator<FilmReleaseDate, LocalDate> {
-        private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-
-        /**
-         * @param constraintAnnotation annotation instance for a given constraint declaration
-         */
-        @Override
-        public void initialize(FilmReleaseDate constraintAnnotation) {
-        }
-
-        @Override
-        public boolean isValid(LocalDate value, ConstraintValidatorContext context) {
-            return value != null && !value.isBefore(EARLIEST_RELEASE_DATE);
-        }
-    }
 }

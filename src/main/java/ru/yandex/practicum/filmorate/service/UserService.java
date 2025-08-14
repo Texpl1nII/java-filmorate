@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +13,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserStorage userStorage;
+    private Long friendId;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
@@ -23,29 +23,30 @@ public class UserService {
         return userStorage.findAll();
     }
 
-    public Optional<User> findById(int id) {
-        return userStorage.findById(id);
+    public Optional<User> findById(Long id) {
+        return userStorage.findById((long) id);
     }
 
     public User add(User user) {
-        if (user.getFriends() == null) {
-            user.setFriends(new HashSet<>());
-        }
+        validateUser(user);
         return userStorage.add(user);
     }
 
     public User update(User user) {
-        User existingUser = findById(Math.toIntExact(user.getId()))
+        validateUser(user);
+        userStorage.findById(user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + user.getId() + " not found"));
-
-        if (user.getFriends() == null) {
-            user.setFriends(existingUser.getFriends());
-        }
-
         return userStorage.update(user);
     }
 
-    public void addFriend(int userId, int friendId) {
+    private void validateUser(User user) {
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            user.setName(user.getLogin());
+        }
+    }
+
+    public void addFriend(Long userId, Long friendId) {
+        this.friendId = friendId;
         User user = findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         User friend = findById(friendId)
@@ -56,7 +57,7 @@ public class UserService {
         user.addFriend((long) friendId);
     }
 
-    public void removeFriend(int userId, int friendId) {
+    public void removeFriend(Long userId, Long friendId) {
         User user = findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         User friend = findById(friendId)
@@ -67,19 +68,28 @@ public class UserService {
         user.removeFriend((long) friendId);
     }
 
-    public List<User> getFriends(int userId) {
-        User user = findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
-        return userStorage.getFriends(userId);
-    }
-
-    public List<User> getCommonFriends(int userId, int otherId) {
+    public List<User> getCommonFriends(Long userId, Long otherId) {
         User user = findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         User otherUser = findById(otherId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + otherId + " not found"));
 
         return userStorage.getCommonFriends(userId, otherId);
+    }
+
+    public User getFriends(Long userId) {
+        User user = userStorage.findById((long) Math.toIntExact(userId))
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        return userStorage.findById((long) Math.toIntExact(friendId))
+                .orElseThrow(() -> new EntityNotFoundException("Friend with id " + friendId + " not found"));
+    }
+
+    public User getFriend(Long userId, Long friendId) {
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        return userStorage.findById(friendId)
+                .orElseThrow(() -> new EntityNotFoundException("Friend with id " + friendId + " not found"));
     }
 }

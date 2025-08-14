@@ -3,13 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -28,58 +26,37 @@ public class FilmController {
         return filmService.findAll();
     }
 
-    @GetMapping("/{id}")
-    public Film findById(@PathVariable long id) {
-        log.debug("Finding film with id: {}", id);
-        return filmService.findById((int) id)
-                .orElseThrow(() -> new IllegalArgumentException("Film with id " + id + " not found"));
-    }
-
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Creating new film: {}", film.getName());
-        // Сохраняем оригинальные жанры для отладки
-        List<Genre> originalGenres = film.getGenres();
-        log.debug("Original genres: {}", originalGenres);
+        return filmService.add(film);
+    }
 
-        boolean hasDuplicates = false;
-        if (originalGenres != null) {
-            hasDuplicates = originalGenres.stream()
-                    .map(Genre::getId)
-                    .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
-                    .values().stream()
-                    .anyMatch(count -> count > 1);
-        }
-
-        Film addedFilm = filmService.add(film);
-
-        if (hasDuplicates && addedFilm.getGenres() != null && addedFilm.getGenres().size() == 2) {
-            List<Genre> genres = new ArrayList<>(addedFilm.getGenres());
-            genres.add(new Genre(genres.get(0).getId(), genres.get(0).getName()));
-            addedFilm.setGenres(genres);
-        }
-
-        return addedFilm;
+    @GetMapping("/{id}")
+    public Film findById(@PathVariable Long id) {
+        log.debug("Finding film with id: {}", id);
+        return filmService.findById((long) Math.toIntExact(id))
+                .orElseThrow(() -> new EntityNotFoundException("Film with id " + id + " not found"));
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("Updating film with id: {}", film.getId());
-        filmService.findById(Math.toIntExact(film.getId()))
+        filmService.findById((long) Math.toIntExact(film.getId()))
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + film.getId() + " not found"));
         return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
+    public void addLike(@PathVariable Long id, @PathVariable int userId) {
         log.debug("User {} liking film {}", userId, id);
-        filmService.addLike(id, userId);
+        filmService.addLike((long) Math.toIntExact(id), (long) userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+    public void removeLike(@PathVariable int id, @PathVariable Long userId) {
         log.debug("User {} removing like from film {}", userId, id);
-        filmService.removeLike(id, userId);
+        filmService.removeLike((long) id, (long) Math.toIntExact(userId));
     }
 
     @GetMapping("/popular")
@@ -89,7 +66,7 @@ public class FilmController {
     }
 
     @GetMapping("/genre/{genreId}")
-    public List<Film> getFilmsByGenre(@PathVariable int genreId) {
-        return filmService.getFilmsByGenreWithoutDuplicates(genreId);
+    public List<Film> getFilmsByGenre(@PathVariable Long genreId) {
+        return filmService.getFilmsByGenre(genreId);
     }
 }

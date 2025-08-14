@@ -36,7 +36,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> findById(int id) {
+    public Optional<User> findById(Long id) {
         return Optional.ofNullable(users.get((long) id));
     }
 
@@ -46,7 +46,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(int userId, int friendId) {
+    public void addFriend(Long userId, Long friendId) {
         findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         findById(friendId)
@@ -55,7 +55,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void removeFriend(int userId, int friendId) {
+    public void removeFriend(Long userId, Long friendId) {
         findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         findById(friendId)
@@ -68,18 +68,23 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(int userId) {
-        findById(userId)
+        return List.of();
+    }
+
+    @Override
+    public List<User> getFriends(long userId) {
+        findById((long) userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         Set<Long> friendIds = friendships.getOrDefault((long) userId, Set.of());
         return friendIds.stream()
-                .map((Long id) -> findById(Math.toIntExact(id)))
+                .map((Long id) -> findById((long) Math.toIntExact(id)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<User> getCommonFriends(int userId, int otherId) {
+    public List<User> getCommonFriends(Long userId, Long otherId) {
         findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
         findById(otherId)
@@ -88,7 +93,7 @@ public class InMemoryUserStorage implements UserStorage {
         Set<Long> otherFriends = friendships.getOrDefault((long) otherId, Set.of());
         return userFriends.stream()
                 .filter(otherFriends::contains)
-                .map((Long id) -> findById(Math.toIntExact(id)))
+                .map((Long id) -> findById((long) Math.toIntExact(id)))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());

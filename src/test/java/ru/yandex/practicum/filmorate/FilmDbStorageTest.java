@@ -36,8 +36,8 @@ class FilmDbStorageTest {
         film.setDescription("This is a test film.");
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpa(new MpaRating(1, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1, "Action")));
+        film.setMpa(new MpaRating(1L, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1L, "Action")));
 
         Film savedFilm = filmStorage.add(film);
         assertThat(savedFilm).isNotNull();
@@ -51,17 +51,17 @@ class FilmDbStorageTest {
         film.setDescription("Original Description");
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpa(new MpaRating(1, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1, "Action")));
+        film.setMpa(new MpaRating(1L, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1L, "Action")));
 
         Film savedFilm = filmStorage.add(film);
 
         savedFilm.setName("Updated Title");
-        savedFilm.setGenres(List.of(new Genre(2, "Comedy")));
+        savedFilm.setGenres(List.of(new Genre(2L, "Comedy")));
 
         Film updatedFilm = filmStorage.update(savedFilm);
         assertThat(updatedFilm.getName()).isEqualTo("Updated Title");
-        assertThat(updatedFilm.getGenres()).extracting(Genre::getId).containsExactlyInAnyOrder(2);
+        assertThat(updatedFilm.getGenres()).extracting(Genre::getId).containsExactlyInAnyOrder(2L);
     }
 
     @Test
@@ -71,11 +71,11 @@ class FilmDbStorageTest {
         film.setDescription("Testing search by ID.");
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpa(new MpaRating(1, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1, "Action")));
+        film.setMpa(new MpaRating(1L, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1L, "Action")));
 
         Film savedFilm = filmStorage.add(film);
-        Optional<Film> foundFilm = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
+        Optional<Film> foundFilm = filmStorage.findById(savedFilm.getId());
         assertThat(foundFilm).isPresent();
         assertThat(foundFilm.get().getName()).isEqualTo("Searchable Film");
     }
@@ -87,8 +87,8 @@ class FilmDbStorageTest {
         film1.setDescription("First movie.");
         film1.setReleaseDate(LocalDate.of(2020, 1, 1));
         film1.setDuration(120);
-        film1.setMpa(new MpaRating(1, "MPA Rating"));
-        film1.setGenres(List.of(new Genre(1, "Action")));
+        film1.setMpa(new MpaRating(1L, "MPA Rating"));
+        film1.setGenres(List.of(new Genre(1L, "Action")));
         filmStorage.add(film1);
 
         Film film2 = new Film();
@@ -96,8 +96,8 @@ class FilmDbStorageTest {
         film2.setDescription("Second movie.");
         film2.setReleaseDate(LocalDate.of(2021, 1, 1));
         film2.setDuration(150);
-        film2.setMpa(new MpaRating(2, "Another MPA Rating"));
-        film2.setGenres(List.of(new Genre(2, "Drama")));
+        film2.setMpa(new MpaRating(2L, "Another MPA Rating"));
+        film2.setGenres(List.of(new Genre(2L, "Drama")));
         filmStorage.add(film2);
 
         List<Film> allFilms = filmStorage.findAll();
@@ -118,16 +118,16 @@ class FilmDbStorageTest {
         film.setDescription("Test movie.");
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
-        film.setMpa(new MpaRating(1, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1, "Action")));
+        film.setMpa(new MpaRating(1L, "MPA Rating"));
+        film.setGenres(List.of(new Genre(1L, "Action")));
         Film savedFilm = filmStorage.add(film);
 
-        filmStorage.addLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
-        Optional<Film> likedFilm = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
+        filmStorage.addLike(savedFilm.getId(), savedUser.getId());
+        Optional<Film> likedFilm = filmStorage.findById(savedFilm.getId());
         assertThat(likedFilm.get().getLikes()).contains(savedUser.getId());
 
-        filmStorage.removeLike(Math.toIntExact(savedFilm.getId()), Math.toIntExact(savedUser.getId()));
-        Optional<Film> unlikedFilm = filmStorage.findById(Math.toIntExact(savedFilm.getId()));
+        filmStorage.removeLike(savedFilm.getId(), savedUser.getId());
+        Optional<Film> unlikedFilm = filmStorage.findById(savedFilm.getId());
         assertThat(unlikedFilm.get().getLikes()).doesNotContain(savedUser.getId());
     }
 
@@ -138,15 +138,15 @@ class FilmDbStorageTest {
         user.setLogin("test_login");
         user.setName("Test Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
-        User savedUser = userStorage.add(user); // Пользователь для лайков
+        User savedUser = userStorage.add(user);
 
         Film film1 = new Film();
         film1.setName("Most Liked Film");
         film1.setDescription("Movie with many likes.");
         film1.setReleaseDate(LocalDate.of(2020, 1, 1));
         film1.setDuration(120);
-        film1.setMpa(new MpaRating(1, "MPA Rating"));
-        film1.setGenres(List.of(new Genre(1, "Action")));
+        film1.setMpa(new MpaRating(1L, "MPA Rating"));
+        film1.setGenres(List.of(new Genre(1L, "Action")));
         Film savedFilm1 = filmStorage.add(film1);
 
         Film film2 = new Film();
@@ -154,11 +154,11 @@ class FilmDbStorageTest {
         film2.setDescription("Movie with fewer likes.");
         film2.setReleaseDate(LocalDate.of(2021, 1, 1));
         film2.setDuration(150);
-        film2.setMpa(new MpaRating(2, "Another MPA Rating"));
-        film2.setGenres(List.of(new Genre(2, "Drama")));
+        film2.setMpa(new MpaRating(2L, "Another MPA Rating"));
+        film2.setGenres(List.of(new Genre(2L, "Drama")));
         Film savedFilm2 = filmStorage.add(film2);
 
-        filmStorage.addLike(Math.toIntExact(savedFilm1.getId()), Math.toIntExact(savedUser.getId()));
+        filmStorage.addLike(savedFilm1.getId(), savedUser.getId());
         List<Film> popularFilms = filmStorage.getPopularFilms(1);
         assertThat(popularFilms).hasSize(1);
         assertThat(popularFilms.get(0).getId()).isEqualTo(savedFilm1.getId());

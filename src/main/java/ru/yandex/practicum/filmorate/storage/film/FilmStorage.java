@@ -10,9 +10,13 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    Optional<Film> findById(int id);
+    Optional<Film> findById(Long id);
 
     List<Film> findAll();
+
+    void addLike(Long filmId, Long userId);
+
+    void removeLike(Long filmId, Long userId);
 
     void addLike(int filmId, int userId);
 
@@ -20,7 +24,5 @@ public interface FilmStorage {
 
     List<Film> getPopularFilms(int count);
 
-    List<Film> getFilmsByGenreWithoutDuplicates(int genreId);
-
-    List<Film> getFilmsByGenre(int genreId);
+    List<Film> getFilmsByGenre(Long genreId);
 }

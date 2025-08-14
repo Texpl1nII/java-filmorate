@@ -36,7 +36,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(int id) {
+    public Optional<Film> findById(Long id) {
         return Optional.empty();
     }
 
@@ -46,15 +46,25 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void addLike(Long filmId, Long userId) {
+
+    }
+
+    @Override
+    public void removeLike(Long filmId, Long userId) {
+
+    }
+
+    @Override
     public void addLike(int filmId, int userId) {
-        Film film = findById((int) filmId)
+        Film film = findById((long) filmId)
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
         film.getLikes().add((long) userId);
     }
 
     @Override
     public void removeLike(int filmId, int userId) {
-        Film film = findById((int) filmId)
+        Film film = findById((long) filmId)
                 .orElseThrow(() -> new IllegalArgumentException("Film with id " + filmId + " not found"));
         film.getLikes().remove((long) userId);
     }
@@ -62,18 +72,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
         return films.values().stream()
-                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .sorted(Comparator.comparingInt(film -> -film.getLikes().size()))
                 .limit(count)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Film> getFilmsByGenreWithoutDuplicates(int genreId) {
-        return List.of();
-    }
-
-    @Override
-    public List<Film> getFilmsByGenre(int genreId) {
+    public List<Film> getFilmsByGenre(Long genreId) {
         return List.of();
     }
 }

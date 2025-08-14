@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.storage.MpaRatingStorage;
 
@@ -17,8 +18,8 @@ public class MpaRatingService {
         return mpaRatingStorage.findAll();
     }
 
-    public MpaRating findById(int id) {
+    public MpaRating findById(Long id) {
         return mpaRatingStorage.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("MPA rating with id " + id + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("MPA rating with id " + id + " not found"));
     }
 }

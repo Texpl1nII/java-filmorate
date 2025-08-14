@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface MpaRatingStorage {
     List<MpaRating> findAll();
 
-    Optional<MpaRating> findById(int id);
+    Optional<MpaRating> findById(Long id);
 }

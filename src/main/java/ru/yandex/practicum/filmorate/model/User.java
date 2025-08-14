@@ -1,48 +1,54 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@Builder
 public class User {
-
     private Long id;
 
-    @NotBlank(message = "Электронная почта не может быть пустой")
-    @Email(message = "Электронная почта должна быть корректной")
+    @Email(message = "Email must be valid")
+    @NotEmpty(message = "Email must not be empty")
     private String email;
 
-    @NotBlank(message = "Логин не может быть пустым")
-    @Pattern(regexp = "\\S+", message = "Логин не может содержать пробелы")
+    @Pattern(regexp = "^\\S+$", message = "Login must not contain spaces")
+    @NotBlank(message = "Login must not be empty")
     private String login;
 
     private String name;
 
-    @NotNull(message = "Дата рождения не может быть пустой")
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
+    @PastOrPresent(message = "Birthday must not be in the future")
     private LocalDate birthday;
 
-    private Set<Long> friends = new HashSet<>();
+    private Set<Long> friends;
 
-    public void ensureValidName() {
-        if (this.name == null || this.name.trim().isEmpty()) {
-            this.name = this.login;
-        }
+    public User(Long id, String email, String login, String name, LocalDate birthday, Set<Long> friends) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = (name == null || name.trim().isEmpty()) ? login : name;
+        this.birthday = birthday;
+        this.friends = friends != null ? friends : new HashSet<>();
     }
 
     public void addFriend(Long friendId) {
+        if (friends == null) {
+            friends = new HashSet<>();
+        }
         friends.add(friendId);
     }
 
     public void removeFriend(Long friendId) {
-        friends.remove(friendId);
-    }
-
-    public int getFriendsCount() {
-        return friends.size();
+        if (friends != null) {
+            friends.remove(friendId);
+        }
     }
 }

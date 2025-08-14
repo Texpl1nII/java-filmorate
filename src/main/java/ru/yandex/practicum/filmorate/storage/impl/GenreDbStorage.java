@@ -21,18 +21,18 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public List<Genre> findAll() {
         String sql = "SELECT genre_id as id, name FROM genres ORDER BY genre_id";
-        return jdbcTemplate.query(sql, (rs, rowNum) ->
-                new Genre(rs.getInt("id"), rs.getString("name")));
+        return jdbcTemplate.query(sql, (ResultSet, rowNum) ->
+                new Genre((long) ResultSet.getInt("id"), ResultSet.getString("name")));
     }
 
     @Override
     public Optional<Genre> findById(int id) {
         String sql = "SELECT genre_id as id, name FROM genres WHERE genre_id = ?";
         try {
-            Genre genre = jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
-                    new Genre(rs.getInt("id"), rs.getString("name")), id);
+            Genre genre = jdbcTemplate.queryForObject(sql, (ResultSet, rowNum) ->
+                    new Genre((long) ResultSet.getInt("id"), ResultSet.getString("name")), id);
             return Optional.ofNullable(genre);
-        } catch (EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException exception) {
             return Optional.empty();
         }
     }

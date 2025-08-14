@@ -22,11 +22,6 @@ public class UserDbStorage implements UserStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private Set<Long> getFriendIds(long userId) {
-        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("friend_id"), userId));
-    }
-
     @Override
     public User add(User user) {
         String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
@@ -52,7 +47,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> findById(int id) {
+    public Optional<User> findById(Long id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try {
             User user = jdbcTemplate.queryForObject(sql, this::mapRowToUser, id);
@@ -70,13 +65,13 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT * FROM users";
         List<User> users = jdbcTemplate.query(sql, this::mapRowToUser);
         for (User user : users) {
-            user.setFriends(getFriendIds(Math.toIntExact(user.getId())));
+            user.setFriends(getFriendIds((long) Math.toIntExact(user.getId())));
         }
         return users;
     }
 
     @Override
-    public void addFriend(int userId, int friendId) {
+    public void addFriend(Long userId, Long friendId) {
         // Проверка существования пользователей
         findById(userId).orElseThrow(() ->
                 new IllegalArgumentException("User with id " + userId + " not found"));
@@ -89,7 +84,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void removeFriend(int userId, int friendId) {
+    public void removeFriend(Long userId, Long friendId) {
         findById(userId).orElseThrow(() ->
                 new IllegalArgumentException("User with id " + userId + " not found"));
         findById(friendId).orElseThrow(() ->
@@ -101,7 +96,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(int userId) {
-        findById(userId).orElseThrow(() ->
+        findById((long) userId).orElseThrow(() ->
                 new IllegalArgumentException("User with id " + userId + " not found"));
 
         String sql = "SELECT u.* FROM users u " +
@@ -110,14 +105,19 @@ public class UserDbStorage implements UserStorage {
         List<User> friends = jdbcTemplate.query(sql, this::mapRowToUser, userId);
 
         for (User friend : friends) {
-            friend.setFriends(getFriendIds(Math.toIntExact(friend.getId())));
+            friend.setFriends(getFriendIds((long) Math.toIntExact(friend.getId())));
         }
 
         return friends;
     }
 
     @Override
-    public List<User> getCommonFriends(int userId, int otherUserId) {
+    public List<User> getFriends(long userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherUserId) {
         findById(userId).orElseThrow(() ->
                 new IllegalArgumentException("User with id " + userId + " not found"));
         findById(otherUserId).orElseThrow(() ->
@@ -130,7 +130,7 @@ public class UserDbStorage implements UserStorage {
         List<User> commonFriends = jdbcTemplate.query(sql, this::mapRowToUser, userId, otherUserId);
 
         for (User friend : commonFriends) {
-            friend.setFriends(getFriendIds(Math.toIntExact(friend.getId())));
+            friend.setFriends(getFriendIds((long) Math.toIntExact(friend.getId())));
         }
 
         return commonFriends;
@@ -147,7 +147,7 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-    private Set<Long> getFriendIds(int userId) {
+    private Set<Long> getFriendIds(Long userId) {
         String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
         List<Long> friendIds = jdbcTemplate.queryForList(sql, Long.class, userId);
         return new HashSet<>(friendIds);
