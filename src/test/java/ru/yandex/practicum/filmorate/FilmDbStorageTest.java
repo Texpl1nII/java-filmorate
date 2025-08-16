@@ -15,8 +15,10 @@ import ru.yandex.practicum.filmorate.storage.impl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.impl.UserDbStorage;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +39,10 @@ class FilmDbStorageTest {
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
         film.setMpa(new MpaRating(1L, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1L, "Action")));
+
+        Set<Genre> genres = new HashSet<>();
+        genres.add(new Genre(1L, "Action"));
+        film.setGenres(genres);
 
         Film savedFilm = filmStorage.add(film);
         assertThat(savedFilm).isNotNull();
@@ -52,12 +57,18 @@ class FilmDbStorageTest {
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
         film.setMpa(new MpaRating(1L, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1L, "Action")));
+
+        Set<Genre> genres = new HashSet<>();
+        genres.add(new Genre(1L, "Action"));
+        film.setGenres(genres);
 
         Film savedFilm = filmStorage.add(film);
 
         savedFilm.setName("Updated Title");
-        savedFilm.setGenres(List.of(new Genre(2L, "Comedy")));
+
+        Set<Genre> updatedGenres = new HashSet<>();
+        updatedGenres.add(new Genre(2L, "Comedy"));
+        savedFilm.setGenres(updatedGenres);
 
         Film updatedFilm = filmStorage.update(savedFilm);
         assertThat(updatedFilm.getName()).isEqualTo("Updated Title");
@@ -72,7 +83,10 @@ class FilmDbStorageTest {
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
         film.setMpa(new MpaRating(1L, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1L, "Action")));
+
+        Set<Genre> genres = new HashSet<>();
+        genres.add(new Genre(1L, "Action"));
+        film.setGenres(genres);
 
         Film savedFilm = filmStorage.add(film);
         Optional<Film> foundFilm = filmStorage.findById(savedFilm.getId());
@@ -88,7 +102,11 @@ class FilmDbStorageTest {
         film1.setReleaseDate(LocalDate.of(2020, 1, 1));
         film1.setDuration(120);
         film1.setMpa(new MpaRating(1L, "MPA Rating"));
-        film1.setGenres(List.of(new Genre(1L, "Action")));
+
+        Set<Genre> genres1 = new HashSet<>();
+        genres1.add(new Genre(1L, "Action"));
+        film1.setGenres(genres1);
+
         filmStorage.add(film1);
 
         Film film2 = new Film();
@@ -97,7 +115,11 @@ class FilmDbStorageTest {
         film2.setReleaseDate(LocalDate.of(2021, 1, 1));
         film2.setDuration(150);
         film2.setMpa(new MpaRating(2L, "Another MPA Rating"));
-        film2.setGenres(List.of(new Genre(2L, "Drama")));
+
+        Set<Genre> genres2 = new HashSet<>();
+        genres2.add(new Genre(2L, "Drama"));
+        film2.setGenres(genres2);
+
         filmStorage.add(film2);
 
         List<Film> allFilms = filmStorage.findAll();
@@ -119,7 +141,11 @@ class FilmDbStorageTest {
         film.setReleaseDate(LocalDate.of(2020, 1, 1));
         film.setDuration(120);
         film.setMpa(new MpaRating(1L, "MPA Rating"));
-        film.setGenres(List.of(new Genre(1L, "Action")));
+
+        Set<Genre> genres = new HashSet<>();
+        genres.add(new Genre(1L, "Action"));
+        film.setGenres(genres);
+
         Film savedFilm = filmStorage.add(film);
 
         filmStorage.addLike(savedFilm.getId(), savedUser.getId());
@@ -146,7 +172,11 @@ class FilmDbStorageTest {
         film1.setReleaseDate(LocalDate.of(2020, 1, 1));
         film1.setDuration(120);
         film1.setMpa(new MpaRating(1L, "MPA Rating"));
-        film1.setGenres(List.of(new Genre(1L, "Action")));
+
+        Set<Genre> genres1 = new HashSet<>();
+        genres1.add(new Genre(1L, "Action"));
+        film1.setGenres(genres1);
+
         Film savedFilm1 = filmStorage.add(film1);
 
         Film film2 = new Film();
@@ -155,12 +185,53 @@ class FilmDbStorageTest {
         film2.setReleaseDate(LocalDate.of(2021, 1, 1));
         film2.setDuration(150);
         film2.setMpa(new MpaRating(2L, "Another MPA Rating"));
-        film2.setGenres(List.of(new Genre(2L, "Drama")));
+
+        Set<Genre> genres2 = new HashSet<>();
+        genres2.add(new Genre(2L, "Drama"));
+        film2.setGenres(genres2);
+
         Film savedFilm2 = filmStorage.add(film2);
 
         filmStorage.addLike(savedFilm1.getId(), savedUser.getId());
         List<Film> popularFilms = filmStorage.getPopularFilms(1);
         assertThat(popularFilms).hasSize(1);
         assertThat(popularFilms.get(0).getId()).isEqualTo(savedFilm1.getId());
+    }
+
+    @Test
+    void testGetFilmsByGenre() {
+        Film film1 = new Film();
+        film1.setName("Action Film");
+        film1.setDescription("Action movie.");
+        film1.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film1.setDuration(120);
+        film1.setMpa(new MpaRating(1L, "MPA Rating"));
+
+        Set<Genre> actionGenres = new HashSet<>();
+        actionGenres.add(new Genre(1L, "Action"));
+        film1.setGenres(actionGenres);
+
+        Film savedFilm1 = filmStorage.add(film1);
+
+        Film film2 = new Film();
+        film2.setName("Drama Film");
+        film2.setDescription("Drama movie.");
+        film2.setReleaseDate(LocalDate.of(2021, 1, 1));
+        film2.setDuration(150);
+        film2.setMpa(new MpaRating(2L, "Another MPA Rating"));
+
+        Set<Genre> dramaGenres = new HashSet<>();
+        dramaGenres.add(new Genre(2L, "Drama"));
+        film2.setGenres(dramaGenres);
+
+        Film savedFilm2 = filmStorage.add(film2);
+
+        List<Film> actionFilms = filmStorage.getFilmsByGenre(1L);
+        assertThat(actionFilms).hasSize(1);
+        assertThat(actionFilms.get(0).getId()).isEqualTo(savedFilm1.getId());
+
+        List<Film> dramaFilms = filmStorage.getFilmsByGenre(2L);
+        assertThat(dramaFilms).hasSize(1);
+        assertThat(dramaFilms.get(0).getId()).isEqualTo(savedFilm2.getId());
     }
 }

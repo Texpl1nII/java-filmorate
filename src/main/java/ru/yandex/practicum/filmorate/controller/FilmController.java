@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -35,28 +34,25 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film findById(@PathVariable Long id) {
         log.debug("Finding film with id: {}", id);
-        return filmService.findById((long) Math.toIntExact(id))
-                .orElseThrow(() -> new EntityNotFoundException("Film with id " + id + " not found"));
+        return filmService.findById(id);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("Updating film with id: {}", film.getId());
-        filmService.findById((long) Math.toIntExact(film.getId()))
-                .orElseThrow(() -> new IllegalArgumentException("Film with id " + film.getId() + " not found"));
         return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id, @PathVariable int userId) {
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
         log.debug("User {} liking film {}", userId, id);
-        filmService.addLike((long) Math.toIntExact(id), (long) userId);
+        filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable int id, @PathVariable Long userId) {
+    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
         log.debug("User {} removing like from film {}", userId, id);
-        filmService.removeLike((long) id, (long) Math.toIntExact(userId));
+        filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")

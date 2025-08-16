@@ -30,6 +30,6 @@ public class Film {
     @NotNull(message = "Рейтинг MPA не может быть пустым")
     private MpaRating mpa;
 
-    private List<Genre> genres = new ArrayList<>();
+    private Set<Genre> genres = new HashSet<>();
     private Set<Long> likes = new HashSet<>();
 }

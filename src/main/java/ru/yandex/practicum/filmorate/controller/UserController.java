@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -29,8 +28,7 @@ public class UserController {
     @GetMapping("/{id}")
     public User findById(@PathVariable Long id) {
         log.debug("Finding user with id: {}", id);
-        return userService.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+        return userService.findById(id);
     }
 
     @PostMapping

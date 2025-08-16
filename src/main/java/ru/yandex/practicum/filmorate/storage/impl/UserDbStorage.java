@@ -61,9 +61,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private Set<Long> getFriendIds(Long userId) {
-        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
-        List<Long> friendIds = jdbcTemplate.queryForList(sql, Long.class, userId);
-        return new HashSet<>(friendIds);
+        return new HashSet<>(jdbcTemplate.queryForList("SELECT friend_id FROM friends WHERE user_id = ?", Long.class, userId));
     }
 
     @Override
@@ -71,41 +69,25 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT * FROM users";
         List<User> users = jdbcTemplate.query(sql, this::mapRowToUser);
         for (User user : users) {
-            user.setFriends(getFriendIds((long) Math.toIntExact(user.getId())));
+            user.setFriends(getFriendIds(user.getId()));
         }
         return users;
     }
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-
-        findById(userId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + userId + " not found"));
-        findById(friendId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + friendId + " not found"));
-
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
     public void removeFriend(Long userId, Long friendId) {
-        findById(userId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + userId + " not found"));
-        findById(friendId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + friendId + " not found"));
-
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
-        findById(userId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + userId + " not found"));
-        findById(otherUserId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + otherUserId + " not found"));
-
         String sql = "SELECT u.* FROM users u " +
                 "JOIN friends f1 ON u.user_id = f1.friend_id " +
                 "JOIN friends f2 ON u.user_id = f2.friend_id " +
@@ -113,7 +95,7 @@ public class UserDbStorage implements UserStorage {
         List<User> commonFriends = jdbcTemplate.query(sql, this::mapRowToUser, userId, otherUserId);
 
         for (User friend : commonFriends) {
-            friend.setFriends(getFriendIds((long) Math.toIntExact(friend.getId())));
+            friend.setFriends(getFriendIds(friend.getId()));
         }
 
         return commonFriends;
@@ -132,9 +114,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Long userId) {
-        findById(userId).orElseThrow(() ->
-                new IllegalArgumentException("User with id " + userId + " not found"));
-
         String sql = "SELECT u.* FROM users u " +
                 "JOIN friends f ON u.user_id = f.friend_id " +
                 "WHERE f.user_id = ?";

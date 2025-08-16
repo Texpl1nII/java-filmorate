@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -37,33 +35,19 @@ public class FilmService {
 
     public Film update(Film film) {
         validateFilm(film);
-        filmStorage.findById(film.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Film with id " + film.getId() + " not found"));
+        findById(film.getId());
         return filmStorage.update(film);
     }
 
     private void validateFilm(Film film) {
         if (film.getMpa() != null) {
-            try {
-                mpaRatingService.findById(film.getMpa().getId());
-            } catch (Exception exception) {
-                throw new EntityNotFoundException("Invalid MPA rating: " + film.getMpa().getId());
-            }
+            mpaRatingService.findById(film.getMpa().getId());
         }
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
-                try {
-                    genreService.findById(genre.getId());
-                } catch (Exception exception) {
-                    throw new EntityNotFoundException("Invalid genre: " + genre.getId());
-                }
+                genreService.findById(genre.getId());
             }
-
-            List<Genre> uniqueGenres = film.getGenres().stream()
-                    .distinct()
-                    .collect(Collectors.toList());
-            film.setGenres(uniqueGenres);
         }
     }
 
@@ -75,13 +59,13 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
-    public Optional<Film> findById(Long id) {
-        return filmStorage.findById(id);
+    public Film findById(Long id) {
+        return filmStorage.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Film with id " + id + " not found"));
     }
 
     public void addLike(Long filmId, Long userId) {
-        filmStorage.findById(filmId)
-                .orElseThrow(() -> new EntityNotFoundException("Film with id " + filmId + " not found"));
+        findById(filmId);
         userStorage.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
@@ -89,8 +73,7 @@ public class FilmService {
     }
 
     public void removeLike(Long filmId, Long userId) {
-        filmStorage.findById(filmId)
-                .orElseThrow(() -> new EntityNotFoundException("Film with id " + filmId + " not found"));
+        findById(filmId);
         userStorage.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
 
