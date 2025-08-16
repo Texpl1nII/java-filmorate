@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
 
@@ -15,17 +15,17 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final MpaRatingService mpaRatingService;
     private final GenreService genreService;
-    private final UserStorage userStorage;
+    private final UserService userService;
 
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
             MpaRatingService mpaRatingService,
             GenreService genreService,
-            @Qualifier("userDbStorage") UserStorage userStorage) {
+            @Lazy UserService userService) {
         this.filmStorage = filmStorage;
         this.mpaRatingService = mpaRatingService;
         this.genreService = genreService;
-        this.userStorage = userStorage;
+        this.userService = userService;
     }
 
     public Film add(Film film) {
@@ -66,17 +66,13 @@ public class FilmService {
 
     public void addLike(Long filmId, Long userId) {
         findById(filmId);
-        userStorage.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
+        userService.findById(userId);
         filmStorage.addLike(filmId, userId);
     }
 
     public void removeLike(Long filmId, Long userId) {
         findById(filmId);
-        userStorage.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-
+        userService.findById(userId);
         filmStorage.removeLike(filmId, userId);
     }
 
