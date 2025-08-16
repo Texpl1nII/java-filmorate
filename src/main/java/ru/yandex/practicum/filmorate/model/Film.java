@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -32,4 +33,21 @@ public class Film {
 
     private Set<Genre> genres = new HashSet<>();
     private Set<Long> likes = new HashSet<>();
+
+    public List<Genre> getGenres() {
+        if (genres == null) {
+            return new ArrayList<>();
+        }
+        return genres.stream()
+                .sorted(Comparator.comparing(Genre::getId))
+                .collect(Collectors.toList());
+    }
+
+    public void setGenres(Collection<Genre> genres) {
+        if (genres == null) {
+            this.genres = new HashSet<>();
+        } else {
+            this.genres = new HashSet<>(genres);
+        }
+    }
 }
