@@ -1,66 +1,54 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.Constraint;
-import jakarta.validation.Payload;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
+import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.validator.NameOrLogin;
-import ru.yandex.practicum.filmorate.validator.NotFutureDate;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@NameOrLogin
+@NoArgsConstructor
+@Builder
 public class User {
-    private Integer id;
-    @NotBlank(message = "Email must be specified")
-    @Email(message = "Email must be a valid email address")
+    private Long id;
+
+    @Email(message = "Email must be valid")
+    @NotEmpty(message = "Email must not be empty")
     private String email;
-    @ValidLogin
+
+    @Pattern(regexp = "^\\S+$", message = "Login must not contain spaces")
+    @NotBlank(message = "Login must not be empty")
     private String login;
+
     private String name;
-    @NotFutureDate
+
+    @PastOrPresent(message = "Birthday must not be in the future")
     private LocalDate birthday;
-    private Set<Long> friends = new HashSet<>();
 
-    @Constraint(validatedBy = LoginValidator.class)
-    @Target({ElementType.FIELD})
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface ValidLogin {
-        String message() default "Login must not be empty or contain spaces";
+    private Set<Long> friends;
 
-        Class<?>[] groups() default {};
-
-        Class<? extends Payload>[] payload() default {};
+    public User(Long id, String email, String login, String name, LocalDate birthday, Set<Long> friends) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = (name == null || name.trim().isEmpty()) ? login : name;
+        this.birthday = birthday;
+        this.friends = friends != null ? friends : new HashSet<>();
     }
 
-    public static class LoginValidator implements ConstraintValidator<ValidLogin, String> {
-        @Override
-        public boolean isValid(String login, ConstraintValidatorContext context) {
-            if (login == null || login.isBlank()) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("Login must not be empty")
-                        .addConstraintViolation();
-                return false;
-            }
-            if (login.contains(" ")) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("Login must not contain spaces")
-                        .addConstraintViolation();
-                return false;
-            }
-            return true;
+    public void addFriend(Long friendId) {
+        if (friends == null) {
+            friends = new HashSet<>();
+        }
+        friends.add(friendId);
+    }
+
+    public void removeFriend(Long friendId) {
+        if (friends != null) {
+            friends.remove(friendId);
         }
     }
 }

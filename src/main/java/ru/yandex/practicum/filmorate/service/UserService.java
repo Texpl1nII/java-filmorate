@@ -1,95 +1,79 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class UserService {
+
     private final UserStorage userStorage;
 
-    public UserService(UserStorage userStorage) {
+    public UserService(
+            @Qualifier("userDbStorage") UserStorage userStorage,
+            @Lazy FilmService filmService) {
         this.userStorage = userStorage;
     }
 
+    public List<User> findAll() {
+        return userStorage.findAll();
+    }
+
+    public User findById(Long id) {
+        return userStorage.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+    }
+
     public User add(User user) {
-        log.debug("Adding user: {}", user.getEmail());
+        validateUser(user);
         return userStorage.add(user);
     }
 
     public User update(User user) {
-        log.debug("Updating user with id: {}", user.getId());
-        if (user.getId() == null || user.getId() <= 0) {
-            log.error("Invalid user ID: {}", user.getId());
-            throw new ValidationException("User ID must be specified and positive");
-        }
+        validateUser(user);
+        findById(user.getId());
         return userStorage.update(user);
     }
 
-    public Optional<User> findById(int id) {
-        log.debug("Finding user with id: {}", id);
-        return userStorage.findById(id);
-    }
-
-    public List<User> findAll() {
-        log.debug("Returning all users, count: {}", userStorage.findAll().size());
-        return userStorage.findAll();
-    }
-
-    public void addFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        user.getFriends().add((long) friendId);
-        friend.getFriends().add((long) userId);
-        log.info("User {} added friend {}", userId, friendId);
-    }
-
-    public void removeFriend(int userId, int friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        user.getFriends().remove((long) friendId);
-        friend.getFriends().remove((long) userId);
-        log.info("User {} removed friend {}", userId, friendId);
-    }
-
-    public List<User> getFriends(int userId) {
-        User user = getUserOrThrow(userId);
-        log.info("Returning friends for user {}: {}", userId, user.getFriends().size());
-        return user.getFriends().stream()
-                .map(id -> userStorage.findById(id.intValue())
-                        .orElse(null))
-                .filter(user1 -> user1 != null)
-                .collect(Collectors.toList());
-    }
-
-    public List<User> getCommonFriends(int userId, int otherId) {
-        User user = getUserOrThrow(userId);
-        User other = getUserOrThrow(otherId);
-        Set<Long> commonFriends = user.getFriends().stream()
-                .filter(other.getFriends()::contains)
-                .collect(Collectors.toSet());
-        log.info("Returning common friends for users {} and {}: {}", userId, otherId, commonFriends.size());
-        return commonFriends.stream()
-                .map(id -> userStorage.findById(id.intValue())
-                        .orElse(null))
-                .filter(user1 -> user1 != null)
-                .collect(Collectors.toList());
-    }
-
-    public User getUserOrThrow(int id) {
-        Optional<User> user = userStorage.findById(id);
-        if (user.isEmpty()) {
-            log.error("User with id {} not found", id);
-            throw new IllegalArgumentException("User with id " + id + " not found");
+    private void validateUser(User user) {
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            user.setName(user.getLogin());
         }
-        return user.get();
+    }
+
+    public void addFriend(Long userId, Long friendId) {
+        User user = findById(userId);
+        User friend = findById(friendId);
+
+        userStorage.addFriend(userId, friendId);
+    }
+
+    public void removeFriend(Long userId, Long friendId) {
+        User user = findById(userId);
+        User friend = findById(friendId);
+
+        userStorage.removeFriend(userId, friendId);
+    }
+
+    public List<User> getCommonFriends(Long userId, Long otherId) {
+        User user = findById(userId);
+        User otherUser = findById(otherId);
+
+        return userStorage.getCommonFriends(userId, otherId);
+    }
+
+    public List<User> getFriends(Long userId) {
+        User user = findById(userId);
+        return userStorage.getFriends(userId);
+    }
+
+    public User getFriend(Long userId, Long friendId) {
+        User user = findById(userId);
+        return findById(friendId);
     }
 }

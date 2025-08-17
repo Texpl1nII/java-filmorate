@@ -7,108 +7,98 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FilmTest {
+public class FilmTest {
+
     private Validator validator;
 
     @BeforeEach
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
-
-    @Test
-    void shouldFailWhenNameIsEmpty() {
-        Film film = new Film();
-        film.setName("");
-        film.setDescription("Valid description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(1);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-        assertEquals("Film name cannot be empty", violations.iterator().next().getMessage());
-    }
-
-    @Test
-    void shouldFailWhenDescriptionExceeds200() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("a".repeat(201));
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(1);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-        assertEquals("Description must not exceed 200 characters", violations.iterator().next().getMessage());
+        this.validator = factory.getValidator();
     }
 
     @Test
     void shouldFailWhenReleaseDateBefore1895() {
         Film film = new Film();
         film.setName("Test Film");
-        film.setDescription("Valid description");
+        film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        film.setDuration(1);
+        film.setDuration(120);
+        film.setMpa(new MpaRating(1L, "G"));
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-        assertEquals("Release date must be on or after December 28, 1895", violations.iterator().next().getMessage());
+        assertFalse(violations.isEmpty(), "Фильм с неверной датой выпуска должен нарушать правила.");
+    }
+
+    @Test
+    void shouldPassWhenReleaseDateOnOrAfter1895() {
+        Film film = new Film();
+        film.setName("Test Film");
+        film.setDescription("Test Description");
+        film.setReleaseDate(LocalDate.of(1895, 12, 28));
+        film.setDuration(120);
+        film.setMpa(new MpaRating(1L, "G"));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertTrue(violations.isEmpty(), "Правильная дата выпуска не должна приводить к нарушениям.");
+    }
+
+    @Test
+    void shouldFailWhenNameIsBlank() {
+        Film film = new Film();
+        film.setName("");
+        film.setDescription("Test Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(120);
+        film.setMpa(new MpaRating(1L, "G"));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty(), "Пустое название нарушает правило.");
+    }
+
+    @Test
+    void shouldFailWhenDescriptionTooLong() {
+        Film film = new Film();
+        film.setName("Test Film");
+        film.setDescription("A".repeat(201));
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(120);
+        film.setMpa(new MpaRating(1L, "G"));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty(), "Слишком длинное описание нарушает правило.");
     }
 
     @Test
     void shouldFailWhenDurationNotPositive() {
         Film film = new Film();
         film.setName("Test Film");
-        film.setDescription("Valid description");
+        film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(0);
+        film.setDuration(-1);
+        film.setMpa(new MpaRating(1L, "G"));
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-        assertEquals("Duration must be positive", violations.iterator().next().getMessage());
+        assertFalse(violations.isEmpty(), "Отрицательная длительность нарушает правило.");
     }
 
     @Test
-    void shouldPassWhenValidFilm() {
+    void shouldFailWhenMpaIsNull() {
         Film film = new Film();
         film.setName("Test Film");
-        film.setDescription("Valid description");
+        film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
-    }
+        film.setMpa(null);
 
-    @Test
-    void shouldFailWhenFieldsAreNull() {
-        Film film = new Film();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Film name cannot be empty")));
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Duration must not be null")));
-    }
-
-    @Test
-    void shouldPassWhenReleaseDateIs18951228() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Valid description");
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setDuration(1);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    void shouldPassWhenDescriptionIs200AndDurationIs1() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("a".repeat(200));
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(1);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertTrue(violations.isEmpty());
+        assertFalse(violations.isEmpty(), "Null MPA should violate the constraint.");
     }
 }

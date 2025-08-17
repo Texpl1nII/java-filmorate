@@ -1,27 +1,53 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.validator.AfterDate;
+import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Film {
-    private Integer id;
-    @NotBlank(message = "Film name cannot be empty")
+    private Long id;
+
+    @NotBlank(message = "Название фильма не может быть пустым")
     private String name;
-    @Size(max = 200, message = "Description must not exceed 200 characters")
+
+    @Size(max = 200, message = "Описание фильма не может быть более 200 символов")
     private String description;
-    @AfterDate(value = "1895-12-28", message = "Release date must be on or after December 28, 1895")
+
+    @FilmReleaseDate
     private LocalDate releaseDate;
-    @NotNull(message = "Duration must not be null")
-    @Positive(message = "Duration must be positive")
-    private Integer duration;
+
+    @Positive(message = "Продолжительность фильма должна быть положительной")
+    private int duration;
+
+    @NotNull(message = "Рейтинг MPA не может быть пустым")
+    private MpaRating mpa;
+
+    private Set<Genre> genres = new HashSet<>();
     private Set<Long> likes = new HashSet<>();
+
+    public List<Genre> getGenres() {
+        if (genres == null) {
+            return new ArrayList<>();
+        }
+        return genres.stream()
+                .sorted(Comparator.comparing(Genre::getId))
+                .collect(Collectors.toList());
+    }
+
+    public void setGenres(Collection<Genre> genres) {
+        if (genres == null) {
+            this.genres = new HashSet<>();
+        } else {
+            this.genres = new HashSet<>(genres);
+        }
+    }
 }

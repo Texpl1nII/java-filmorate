@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+
     private final FilmService filmService;
 
     public FilmController(FilmService filmService) {
@@ -24,17 +25,16 @@ public class FilmController {
         return filmService.findAll();
     }
 
-    @GetMapping("/{id}")
-    public Film findById(@PathVariable int id) {
-        log.debug("Finding film with id: {}", id);
-        return filmService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Film with id " + id + " not found"));
-    }
-
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Creating new film: {}", film.getName());
         return filmService.add(film);
+    }
+
+    @GetMapping("/{id}")
+    public Film findById(@PathVariable Long id) {
+        log.debug("Finding film with id: {}", id);
+        return filmService.findById(id);
     }
 
     @PutMapping
@@ -44,13 +44,13 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
         log.debug("User {} liking film {}", userId, id);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable int id, @PathVariable int userId) {
+    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
         log.debug("User {} removing like from film {}", userId, id);
         filmService.removeLike(id, userId);
     }
@@ -59,5 +59,10 @@ public class FilmController {
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
         log.debug("Requesting top {} popular films", count);
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/genre/{genreId}")
+    public List<Film> getFilmsByGenre(@PathVariable Long genreId) {
+        return filmService.getFilmsByGenre(genreId);
     }
 }

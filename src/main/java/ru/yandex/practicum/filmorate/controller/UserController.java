@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -25,10 +26,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User findById(@PathVariable int id) {
+    public User findById(@PathVariable Long id) {
         log.debug("Finding user with id: {}", id);
-        return userService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
+        return userService.findById(id);
     }
 
     @PostMapping
@@ -43,28 +43,33 @@ public class UserController {
         return userService.update(user);
     }
 
+    @GetMapping("/{id}/friends/{friendId}")
+    public User getFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        log.debug("Getting friend {} of user {}", friendId, id);
+        return userService.getFriend(id, friendId);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
         log.debug("User {} adding friend {}", id, friendId);
         userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(@PathVariable int id, @PathVariable int friendId) {
+    public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
         log.debug("User {} removing friend {}", id, friendId);
         userService.removeFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable int id) {
+    public List<User> getFriends(@PathVariable Long id) {
         log.debug("Requesting friends for user {}", id);
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         log.debug("Requesting common friends for users {} and {}", id, otherId);
         return userService.getCommonFriends(id, otherId);
     }
 }
-
